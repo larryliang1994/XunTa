@@ -20,8 +20,8 @@
             android:id="@+id/appBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:transitionName="appBar"
-            android:theme="@style/AppTheme.AppBarOverlay">
+            android:theme="@style/AppTheme.AppBarOverlay"
+            android:transitionName="appBar">
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
@@ -42,26 +42,26 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_gravity="bottom|end"
+            android:layout_marginBottom="16dp"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
-            android:layout_marginBottom="16dp"
-            app:mrl_rippleColor="@color/rippleColor"
-            app:mrl_rippleAlpha="0.1"
-            app:mrl_rippleOverlay="true"
-            app:mrl_rippleRoundedCorners="3dp"
-            app:mrl_rippleDuration="300"
             android:elevation="4dp"
-            app:mrl_rippleDelayClick="true">
+            app:mrl_rippleAlpha="0.1"
+            app:mrl_rippleColor="@color/rippleColor"
+            app:mrl_rippleDelayClick="true"
+            app:mrl_rippleDuration="300"
+            app:mrl_rippleOverlay="true"
+            app:mrl_rippleRoundedCorners="3dp">
 
             <Button
                 android:id="@+id/button"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:transitionName="button"
                 android:background="@drawable/round_button_primary"
                 android:text="马上寻Ta"
                 android:textColor="#ffffff"
-                android:textSize="18sp" />
+                android:textSize="18sp"
+                android:transitionName="button" />
         </com.balysv.materialripple.MaterialRippleLayout>
 
     </android.support.design.widget.CoordinatorLayout>

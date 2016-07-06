@@ -1,6 +1,8 @@
 package com.larryhowell.xunta.bean;
 
-public class Person {
+import java.io.Serializable;
+
+public class Person implements Serializable {
     private String nickname;
     private String telephone;
     private String portraitUrl;

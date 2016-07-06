@@ -2,6 +2,7 @@ package com.larryhowell.xunta.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,10 +23,8 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-/**
- * Created by Leunghowell on 16/6/19.
- */
-public class BindListAdapter extends RecyclerView.Adapter {
+public class BindListAdapter extends RecyclerView.Adapter implements View.OnClickListener {
+    private OnRecyclerViewItemClickListener mOnItemClickListener = null;
     private Context mContext;
 
     public BindListAdapter(Context context){
@@ -33,9 +32,14 @@ public class BindListAdapter extends RecyclerView.Adapter {
 
     }
 
+    public void setOnItemClickListener(OnRecyclerViewItemClickListener listener) {
+        this.mOnItemClickListener = listener;
+    }
+
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_body_member, parent, false);
+        view.setOnClickListener(this);
         return new ViewHolder(view);
     }
 
@@ -53,6 +57,17 @@ public class BindListAdapter extends RecyclerView.Adapter {
                         UtilBox.dip2px(mContext, 45),
                         UtilBox.dip2px(mContext, 45))
                         , holder.portraitImageView);
+
+        holder.bodyRippleViewLayout.setOnClickListener(this);
+
+        holder.itemView.setTag(person);
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (mOnItemClickListener != null) {
+            mOnItemClickListener.onItemClick(v, (Person) v.getTag());
+        }
     }
 
     @Override
@@ -61,7 +76,6 @@ public class BindListAdapter extends RecyclerView.Adapter {
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-
 
         @Bind(R.id.iv_item_body_member) ImageView portraitImageView;
         @Bind(R.id.rl_item_body_member) MaterialRippleLayout bodyRippleViewLayout;
@@ -72,5 +86,11 @@ public class BindListAdapter extends RecyclerView.Adapter {
 
             ButterKnife.bind(this, itemView);
         }
+
+    }
+
+    //define interface
+    public interface OnRecyclerViewItemClickListener {
+        void onItemClick(View view , Person person);
     }
 }

@@ -7,5 +7,7 @@
     <color name="rippleColor">#bdbdbd</color>
     <color name="white">#ffffff</color>
 
+    <color name="divider">#55767676</color>
+
     <color name="black_semi_transparent">#B2000000</color>
 </resources>

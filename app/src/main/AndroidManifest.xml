@@ -17,8 +17,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
-    <uses-permission android:name="android.permission.VIBRATE"/>
-
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.CAMERA" />
 
     <uses-feature android:name="android.hardware.camera.any" />
@@ -62,14 +61,13 @@
         <activity
             android:name=".EntryActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/StartUpTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".ui.MainActivity"
             android:label="@string/app_name"
@@ -79,6 +77,7 @@
         <activity
             android:name=".ui.BindListActivity"
             android:label="@string/title_activity_bind_list"
+            android:launchMode="singleTask"
             android:parentActivityName=".ui.MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
@@ -96,6 +95,26 @@
         </activity>
 
         <activity android:name=".zxing.activity.CaptureActivity" />
+
+        <activity
+            android:name=".ui.UserInfoActivity"
+            android:label="@string/title_activity_personal_info"
+            android:parentActivityName=".ui.MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.larryhowell.xunta.ui.MainActivity" />
+        </activity>
+
+        <activity
+            android:name=".ui.MemberMainActivity"
+            android:label="@string/title_activity_member_info"
+            android:parentActivityName=".ui.BindListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.larryhowell.xunta.ui.BindListActivity" />
+        </activity>
 
         <service
             android:name="com.baidu.location.f"

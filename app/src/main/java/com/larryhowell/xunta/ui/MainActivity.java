@@ -1,7 +1,6 @@
 package com.larryhowell.xunta.ui;
 
 import android.app.ActivityOptions;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
@@ -14,6 +13,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,7 +42,7 @@ import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends BaseActivity
-        implements NavigationView.OnNavigationItemSelectedListener, BDLocationListener {
+        implements NavigationView.OnNavigationItemSelectedListener, BDLocationListener, View.OnClickListener {
 
     @Bind(R.id.mapView)
     MapView mMapView;
@@ -111,14 +111,14 @@ public class MainActivity extends BaseActivity
     }
 
     private void showLoginDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_NoActionBar_MinWidth);
         builder.setMessage("需要登录才能使用这个功能哦")
                 .setCancelable(true)
                 .setPositiveButton("登录", (dialog, which) -> {
                     startActivityForResult(
                             new Intent(MainActivity.this, LoginActivity.class),
-                            Constants.CODE_LOGIN
-                            , ActivityOptions.makeSceneTransitionAnimation(
+                            Constants.CODE_LOGIN,
+                            ActivityOptions.makeSceneTransitionAnimation(
                                     MainActivity.this,
                                     Pair.create(mButton, "button"),
                                     Pair.create(mAppBarLayout, "appBar")
@@ -140,9 +140,9 @@ public class MainActivity extends BaseActivity
         //option.setScanSpan(1000); // 定位次数
         option.setLocationNotify(true);//可选，默认false，设置是否当gps有效时按照1S1次频率输出GPS结果
         option.setIsNeedLocationDescribe(true);//可选，默认false，设置是否需要位置语义化结果，可以在BDLocation.getLocationDescribe里得到，结果类似于“在北京天安门附近”
-        option.setIsNeedLocationPoiList(true);//可选，默认false，设置是否需要POI结果，可以在BDLocation.getPoiList里得到
-        option.setIgnoreKillProcess(false);//可选，默认true，定位SDK内部是一个SERVICE，并放到了独立进程，设置是否在stop的时候杀死这个进程，默认不杀死
-        option.SetIgnoreCacheException(false);//可选，默认false，设置是否收集CRASH信息，默认收集
+        //option.setIsNeedLocationPoiList(true);//可选，默认false，设置是否需要POI结果，可以在BDLocation.getPoiList里得到
+        //option.setIgnoreKillProcess(false);//可选，默认true，定位SDK内部是一个SERVICE，并放到了独立进程，设置是否在stop的时候杀死这个进程，默认不杀死
+        //option.SetIgnoreCacheException(false);//可选，默认false，设置是否收集CRASH信息，默认收集
         mLocationClient.setLocOption(option);
     }
 
@@ -186,7 +186,7 @@ public class MainActivity extends BaseActivity
         toggle.syncState();
 
         mNavigationView.setNavigationItemSelectedListener(this);
-        mNavigationView.setItemIconTintList(null);
+        //mNavigationView.setItemIconTintList(null);
 
         // 设置昵称
         mNicknameTextView = (TextView) mNavigationView.getHeaderView(0).findViewById(R.id.tv_navigation_nickname);
@@ -199,6 +199,7 @@ public class MainActivity extends BaseActivity
         }
 
         mNavigationView.getHeaderView(0).findViewById(R.id.ll_nvHeader).setBackgroundResource(R.drawable.nav_header_background);
+        mNavigationView.getHeaderView(0).findViewById(R.id.ll_nvHeader).setOnClickListener(this);
     }
 
     @Override
@@ -211,24 +212,15 @@ public class MainActivity extends BaseActivity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.ll_nvHeader:
+            case R.id.iv_navigation:
+            case R.id.tv_navigation_nickname:
+                startActivity(new Intent(this, UserInfoActivity.class));
+                mDrawer.closeDrawer(GravityCompat.START);
+                break;
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -248,7 +240,7 @@ public class MainActivity extends BaseActivity
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_logout) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_NoActionBar_MinWidth);
             builder.setMessage("真的要注销吗")
                     .setNegativeButton("假的", (dialog, which) -> {
 
@@ -282,6 +274,7 @@ public class MainActivity extends BaseActivity
                 if (resultCode == RESULT_OK) {
                     ImageLoader.getInstance().displayImage(Config.portrait, mNavigationPortraitImageView);
                     mNicknameTextView.setText(Config.nickname);
+                    mDrawer.openDrawer(GravityCompat.START);
                 }
                 break;
         }

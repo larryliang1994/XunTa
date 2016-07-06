@@ -1,23 +1,21 @@
 package com.larryhowell.xunta.ui;
 
 import android.app.ActivityOptions;
-import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
@@ -25,7 +23,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
-import com.getbase.floatingactionbutton.TouchDelegateGroup;
 import com.larryhowell.xunta.R;
 import com.larryhowell.xunta.adapter.BindListAdapter;
 import com.larryhowell.xunta.common.Config;
@@ -36,13 +33,7 @@ import com.larryhowell.xunta.presenter.IBindPresenter;
 import com.larryhowell.xunta.presenter.IGetBindListPresenter;
 import com.larryhowell.xunta.widget.DividerItemDecoration;
 import com.larryhowell.xunta.zxing.activity.CaptureActivity;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.lang.reflect.Field;
-import java.util.Calendar;
-import java.util.Locale;
+import com.umeng.analytics.MobclickAgent;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -62,6 +53,12 @@ public class BindListActivity extends AppCompatActivity
 
     @Bind(R.id.floating_actions)
     FloatingActionsMenu mFloatingActionsMenu;
+
+    @Bind(R.id.appBar)
+    AppBarLayout mAppBarLayout;
+
+    @Bind(R.id.fab)
+    FloatingActionButton mFloatingActionButton;
 
     private BindListAdapter mAdapter;
     private ProgressDialog mProgressDialog;
@@ -91,7 +88,7 @@ public class BindListActivity extends AppCompatActivity
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, null));
 
-        mProgressDialog = new ProgressDialog(this);
+        mProgressDialog = new ProgressDialog(this, android.R.style.Theme_Material);
         mProgressDialog.setMessage("绑定中...");
 
         // 延迟执行才能使旋转进度条显示出来
@@ -113,12 +110,33 @@ public class BindListActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        mFloatingActionButton.setVisibility(View.GONE);
+        MobclickAgent.onResume(this);
+    }
+
+    @Override
     public void OnGetBindListResult(Boolean result, String info) {
         mSwipeRefreshLayout.setRefreshing(false);
 
         if (result) {
             if (mAdapter == null) {
                 mAdapter = new BindListAdapter(this);
+
+                mAdapter.setOnItemClickListener((view, person) -> {
+                    //mFloatingActionButton.setVisibility(View.VISIBLE);
+                    Intent intent = new Intent(BindListActivity.this, MemberMainActivity.class);
+                    intent.putExtra("person", person);
+                    startActivity(intent);
+
+//                            ActivityOptions.makeSceneTransitionAnimation(
+//                                    BindListActivity.this,
+//                                    //Pair.create(mFloatingActionButton, "fab"),
+//                                    Pair.create(mAppBarLayout, "appBar")).toBundle());
+                });
+
                 mRecyclerView.setAdapter(mAdapter);
             } else {
                 mAdapter.notifyDataSetChanged();
@@ -164,7 +182,7 @@ public class BindListActivity extends AppCompatActivity
             } else if (!Config.isConnected) {
                 Toast.makeText(this, R.string.cant_access_network,
                         Toast.LENGTH_SHORT).show();
-            } else if (!UtilBox.isTelephoneNumber(editText.getText().toString())){
+            } else if (!UtilBox.isTelephoneNumber(editText.getText().toString())) {
                 mTextView.setVisibility(View.VISIBLE);
                 mTextView.setText("请输入11位手机号");
             } else {

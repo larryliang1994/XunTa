@@ -1,5 +1,6 @@
 package com.larryhowell.xunta;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -34,7 +35,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class EntryActivity extends BaseActivity implements IGetUserInfoPresenter.IGetUserInfoView {
+public class EntryActivity extends Activity implements IGetUserInfoPresenter.IGetUserInfoView {
     @Bind(R.id.ll_no_network)
     LinearLayout mNoNetworkLinearLayout;
 
@@ -188,5 +189,17 @@ public class EntryActivity extends BaseActivity implements IGetUserInfoPresenter
                 .tasksProcessingOrder(QueueProcessingType.FIFO).build();
         L.writeLogs(false);
         ImageLoader.getInstance().init(config);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        MobclickAgent.onResume(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
     }
 }
