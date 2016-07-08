@@ -1,5 +1,7 @@
 package com.larryhowell.xunta.presenter;
 
+import android.util.Log;
+
 import com.larryhowell.xunta.net.OkHttpUtil;
 import com.zhy.http.okhttp.callback.StringCallback;
 
@@ -20,33 +22,31 @@ public class UpdatePresenterImpl implements IUpdatePresenter {
 
     @Override
     public void getVersion() {
-        iUpdateView.onGetVersionResult(true, String.valueOf(2));
+        Map<String, String> params = new HashMap<>();
+        params.put("type", "version");
+        params.put("operation", "get");
+        OkHttpUtil.get(params, new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id) {
+                iUpdateView.onGetVersionResult(false, call.toString());
+            }
 
-//        Map<String, String> params = new HashMap<>();
-//        params.put("type", "version");
-//        params.put("operation", "get");
-//        OkHttpUtil.get(params, new StringCallback() {
-//            @Override
-//            public void onError(Call call, Exception e, int id) {
-//                iUpdateView.onGetVersionResult(false, call.toString());
-//            }
-//
-//            @Override
-//            public void onResponse(String response, int id) {
-//                try {
-//                    JSONObject jsonObject = new JSONObject(response);
-//                    int version = jsonObject.getInt("version");
-//
-//                    if (version == -1) {
-//                        iUpdateView.onGetVersionResult(false, "非法请求");
-//                    } else {
-//                        iUpdateView.onGetVersionResult(true, String.valueOf(version));
-//                    }
-//                } catch (JSONException e) {
-//                    iUpdateView.onGetVersionResult(false, e.getMessage());
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
+            @Override
+            public void onResponse(String response, int id) {
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    int version = jsonObject.getInt("version");
+
+                    if (version == -1) {
+                        iUpdateView.onGetVersionResult(false, "非法请求");
+                    } else {
+                        iUpdateView.onGetVersionResult(true, String.valueOf(version));
+                    }
+                } catch (JSONException e) {
+                    iUpdateView.onGetVersionResult(false, e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 }

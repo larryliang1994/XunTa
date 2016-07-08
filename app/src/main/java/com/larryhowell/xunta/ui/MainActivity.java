@@ -214,13 +214,15 @@ public class MainActivity extends BaseActivity
     @Override
     public void onGetVersionResult(Boolean result, String info) {
         if(result) {
-            if(Integer.valueOf(info).compareTo(1) <= 0) {
+            int versionCode = UtilBox.getPackageInfo(this).versionCode;
+
+            if(Integer.valueOf(info).compareTo(versionCode) <= 0) {
                 return;
             }
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_NoActionBar_MinWidth);
             builder.setTitle("是否更新")
-                    .setMessage("当前版本:" + UtilBox.getPackageInfo(this).versionCode + "\n最新版本:" + info)
+                    .setMessage("当前版本:" + versionCode + "\n最新版本:" + info)
                     .setCancelable(true)
                     .setPositiveButton("更新", (dialog, which) -> {
                         Uri uri = Uri.parse("http://xunta.file.alimmdn.com/xunta_" + info + ".apk");

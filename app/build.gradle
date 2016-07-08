@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 apply plugin: 'me.tatarka.retrolambda' // 添加lambda插件
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 24
     buildToolsVersion '24.0.0'
     defaultConfig {
         applicationId "com.larryhowell.xunta"
         minSdkVersion 21
-        targetSdkVersion 23
-        versionCode 1
+        targetSdkVersion 24
+        versionCode 2
         versionName "0.2"
         signingConfig signingConfigs.debug
     }
