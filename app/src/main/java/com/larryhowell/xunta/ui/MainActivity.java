@@ -2,6 +2,9 @@ package com.larryhowell.xunta.ui;
 
 import android.app.ActivityOptions;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
@@ -18,6 +21,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.alibaba.sdk.android.ut.impl.UTLifecycleAdapter;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
@@ -34,6 +38,8 @@ import com.larryhowell.xunta.R;
 import com.larryhowell.xunta.common.Config;
 import com.larryhowell.xunta.common.Constants;
 import com.larryhowell.xunta.common.UtilBox;
+import com.larryhowell.xunta.presenter.IUpdatePresenter;
+import com.larryhowell.xunta.presenter.UpdatePresenterImpl;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.umeng.analytics.MobclickAgent;
 
@@ -42,7 +48,8 @@ import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends BaseActivity
-        implements NavigationView.OnNavigationItemSelectedListener, BDLocationListener, View.OnClickListener {
+        implements NavigationView.OnNavigationItemSelectedListener, BDLocationListener,
+        View.OnClickListener, IUpdatePresenter.IUpdateView {
 
     @Bind(R.id.mapView)
     MapView mMapView;
@@ -85,6 +92,8 @@ public class MainActivity extends BaseActivity
         mLocationClient.registerLocationListener(this);
 
         mLocationClient.start();
+
+        new UpdatePresenterImpl(this).getVersion();
     }
 
     private void initView() {
@@ -200,6 +209,31 @@ public class MainActivity extends BaseActivity
 
         mNavigationView.getHeaderView(0).findViewById(R.id.ll_nvHeader).setBackgroundResource(R.drawable.nav_header_background);
         mNavigationView.getHeaderView(0).findViewById(R.id.ll_nvHeader).setOnClickListener(this);
+    }
+
+    @Override
+    public void onGetVersionResult(Boolean result, String info) {
+        if(result) {
+            if(Integer.valueOf(info).compareTo(1) <= 0) {
+                return;
+            }
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_NoActionBar_MinWidth);
+            builder.setTitle("是否更新")
+                    .setMessage("当前版本:" + UtilBox.getPackageInfo(this).versionCode + "\n最新版本:" + info)
+                    .setCancelable(true)
+                    .setPositiveButton("更新", (dialog, which) -> {
+                        Uri uri = Uri.parse("http://xunta.file.alimmdn.com/xunta_" + info + ".apk");
+                        startActivity(new Intent(Intent.ACTION_VIEW,uri));
+                    })
+                    .setNegativeButton("取消", null);
+
+            AlertDialog dialog = builder.create();
+            dialog.setCanceledOnTouchOutside(true);
+            dialog.show();
+        } else {
+            UtilBox.reportBug(info);
+        }
     }
 
     @Override

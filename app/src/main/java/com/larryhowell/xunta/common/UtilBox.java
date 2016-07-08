@@ -5,6 +5,8 @@ import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -20,6 +22,10 @@ import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+
+import com.tencent.bugly.Bugly;
+import com.tencent.bugly.crashreport.BuglyLog;
+import com.tencent.bugly.crashreport.CrashReport;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -93,7 +99,6 @@ public class UtilBox {
 
         ViewGroup.LayoutParams params = listView.getLayoutParams();
         params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
-        ;
         //listView.getDividerHeight()获取子项间分隔符占用的高度
         // params.height最后得到整个ListView完整显示需要的高度
         listView.setLayoutParams(params);
@@ -547,4 +552,22 @@ public class UtilBox {
 
     }
 
+    // 上报一个Bug
+    public static void reportBug(String content) {
+        CrashReport.postCatchedException(new Throwable(content));
+    }
+
+    public static PackageInfo getPackageInfo(Context context) {
+        // 获取PackageManager的实例
+        PackageManager packageManager = context.getPackageManager();
+
+        try {
+            // getPackageName()是当前类的包名，0代表是获取版本信息
+            return packageManager.getPackageInfo(context.getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }

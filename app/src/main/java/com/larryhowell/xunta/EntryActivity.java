@@ -17,6 +17,7 @@ import com.larryhowell.xunta.common.Config;
 import com.larryhowell.xunta.common.Constants;
 import com.larryhowell.xunta.common.UtilBox;
 import com.larryhowell.xunta.net.MediaServiceUtil;
+import com.larryhowell.xunta.net.OkHttpUtil;
 import com.larryhowell.xunta.presenter.GetUserInfoPresenterImpl;
 import com.larryhowell.xunta.presenter.IGetUserInfoPresenter;
 import com.larryhowell.xunta.ui.BaseActivity;
@@ -30,6 +31,9 @@ import com.nostra13.universalimageloader.utils.L;
 import com.taobao.tae.sdk.callback.InitResultCallback;
 import com.tencent.bugly.crashreport.CrashReport;
 import com.umeng.analytics.MobclickAgent;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;

@@ -9,6 +9,7 @@ import android.net.NetworkInfo;
 import com.baidu.mapapi.SDKInitializer;
 import com.larryhowell.xunta.common.Config;
 import com.larryhowell.xunta.common.Constants;
+import com.larryhowell.xunta.net.OkHttpUtil;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -35,8 +36,8 @@ public class App extends Application {
         // 启动崩溃统计
         CrashReport.initCrashReport(getApplicationContext(), Constants.BUGLY_APP_ID, false);
 
-        // 初始化请求队列
-        //VolleyUtil.initRequestQueue(getApplicationContext());
+        // 初始化请求
+        OkHttpUtil.init(getApplicationContext());
 
         // 初始化网络状态
         getNetworkState();
