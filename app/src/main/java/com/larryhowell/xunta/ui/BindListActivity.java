@@ -15,8 +15,10 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.transition.Fade;
 import android.util.Pair;
 import android.view.View;
+import android.view.Window;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -129,12 +131,11 @@ public class BindListActivity extends AppCompatActivity
                     //mFloatingActionButton.setVisibility(View.VISIBLE);
                     Intent intent = new Intent(BindListActivity.this, MemberMainActivity.class);
                     intent.putExtra("person", person);
-                    startActivity(intent);
-
-//                            ActivityOptions.makeSceneTransitionAnimation(
-//                                    BindListActivity.this,
-//                                    //Pair.create(mFloatingActionButton, "fab"),
-//                                    Pair.create(mAppBarLayout, "appBar")).toBundle());
+                    startActivity(intent,
+                            ActivityOptions.makeSceneTransitionAnimation(
+                                    BindListActivity.this,
+                                    //Pair.create(mFloatingActionButton, "fab"),
+                                    Pair.create(mAppBarLayout, "appBar")).toBundle());
                 });
 
                 mRecyclerView.setAdapter(mAdapter);

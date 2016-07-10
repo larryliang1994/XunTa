@@ -13,6 +13,8 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.transition.Fade;
+import android.util.Log;
 import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,6 +35,11 @@ import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.search.geocode.GeoCodeResult;
+import com.baidu.mapapi.search.geocode.GeoCoder;
+import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
+import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
+import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.balysv.materialripple.MaterialRippleLayout;
 import com.larryhowell.xunta.R;
 import com.larryhowell.xunta.common.Config;
@@ -108,13 +115,13 @@ public class MainActivity extends BaseActivity
             if (Config.telephone == null || "".equals(Config.telephone)) {
                 showLoginDialog();
             } else {
-//                startActivity(
-//                        new Intent(MainActivity.this, BindListActivity.class)
-//                        , ActivityOptions.makeSceneTransitionAnimation(
-//                                MainActivity.this,
-//                                Pair.create(mButton, "button")
-//                        ).toBundle());
-                startActivity(new Intent(MainActivity.this, BindListActivity.class));
+                startActivity(
+                        new Intent(MainActivity.this, BindListActivity.class)
+                        , ActivityOptions.makeSceneTransitionAnimation(
+                                MainActivity.this,
+                                Pair.create(mAppBarLayout, "appBar")
+                        ).toBundle());
+                //startActivity(new Intent(MainActivity.this, BindListActivity.class));
             }
         });
     }
@@ -161,7 +168,7 @@ public class MainActivity extends BaseActivity
     public void onReceiveLocation(BDLocation location) {
         BaiduMap mBaiduMap = mMapView.getMap();
 
-        // map view 销毁后不在处理新接收的位置
+        // map view 销毁后不再处理新接收的位置
         if (location == null || mMapView == null) {
             return;
         }
@@ -177,6 +184,26 @@ public class MainActivity extends BaseActivity
         mBaiduMap.setMyLocationConfigeration(
                 new MyLocationConfiguration(
                         MyLocationConfiguration.LocationMode.FOLLOWING, true, null));
+
+        ReverseGeoCodeOption option = new ReverseGeoCodeOption();
+        option.location(new LatLng(location.getLatitude(), location.getLongitude()));
+        GeoCoder geoCoder = GeoCoder.newInstance();
+        geoCoder.setOnGetGeoCodeResultListener(new OnGetGeoCoderResultListener() {
+            @Override
+            public void onGetGeoCodeResult(GeoCodeResult geoCodeResult) {
+
+            }
+
+            @Override
+            public void onGetReverseGeoCodeResult(ReverseGeoCodeResult reverseGeoCodeResult) {
+                String address = reverseGeoCodeResult.getAddress();
+
+                Config.currentCity = address.substring(address.indexOf("省") + 1, address.indexOf("市"));
+
+                Config.currentCityDetail = address.substring(address.indexOf("市") + 1, address.length());
+            }
+        });
+        geoCoder.reverseGeoCode(option);
 
         if (isFirstLoc) {
             isFirstLoc = false;
@@ -326,6 +353,7 @@ public class MainActivity extends BaseActivity
     public void onResume() {
         super.onResume();
         mMapView.onResume();
+        mMapView.setVisibility(View.VISIBLE);
         MobclickAgent.onResume(this);
     }
 
@@ -333,6 +361,7 @@ public class MainActivity extends BaseActivity
     public void onPause() {
         super.onPause();
         mMapView.onPause();
+        mMapView.setVisibility(View.GONE);
         MobclickAgent.onPause(this);
     }
 }

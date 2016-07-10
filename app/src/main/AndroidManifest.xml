@@ -111,10 +111,28 @@
             android:name=".ui.MemberMainActivity"
             android:label="@string/title_activity_member_info"
             android:parentActivityName=".ui.BindListActivity"
+            android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.larryhowell.xunta.ui.BindListActivity" />
+        </activity>
+
+        <activity
+            android:name=".ui.MakePlanActivity"
+            android:parentActivityName=".ui.MemberMainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.larryhowell.xunta.ui.MemberMainActivity" />
+        </activity>
+
+        <activity android:name=".ui.ChooseLocationActivity"
+            android:parentActivityName=".ui.MakePlanActivity"
+            android:theme="@style/SearchView">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.larryhowell.xunta.ui.MakePlanActivity" />
         </activity>
 
         <service
@@ -122,5 +140,4 @@
             android:enabled="true"
             android:process=":remote" />
     </application>
-
 </manifest>

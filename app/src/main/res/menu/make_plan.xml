@@ -1,10 +1,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.larryhowell.xunta.ui.MemberMainActivity">
+    tools:context=".ui.activity.TaskPublishActivity">
+
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_ok"
+        android:icon="@mipmap/ok"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never" />
+        android:title="发布"
+        app:showAsAction="ifRoom" />
+
 </menu>

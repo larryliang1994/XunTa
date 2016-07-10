@@ -12,4 +12,7 @@ public class Config {
     public static boolean isConnected = false;
 
     public static ArrayList<Person> bindList = new ArrayList<>();
+
+    public static String currentCity = "南京";
+    public static String currentCityDetail = "航空";
 }

@@ -1,8 +1,5 @@
 package com.larryhowell.xunta.common;
 
-/**
- * Created by Leunghowell on 16/6/11.
- */
 public class Constants {
     public static final String BUGLY_APP_ID = "900033930";
     public static final String UMENG_APP_KEY = "575b8327e0f55aee8a00175f";
@@ -15,4 +12,5 @@ public class Constants {
     public static final String NAMESPACE = "xunta";
 
     public static final int CODE_LOGIN = 1;
+    public static final int CODE_CHOOSE_LOCATION = 2;
 }
