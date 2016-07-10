@@ -37,6 +37,7 @@ public class MemberMapFragment extends Fragment {
 
         ProgressDialog progressDialog = new ProgressDialog(getActivity());
         progressDialog.setMessage("正在获取对方当前位置");
+        progressDialog.setCancelable(false);
         progressDialog.show();
 
         new Handler().postDelayed(() -> {
@@ -50,6 +51,7 @@ public class MemberMapFragment extends Fragment {
         super.onPause();
 
         mMapView.onPause();
+        mMapView.setVisibility(View.GONE);
     }
 
     @Override
@@ -57,6 +59,7 @@ public class MemberMapFragment extends Fragment {
         super.onResume();
 
         mMapView.onResume();
+        mMapView.setVisibility(View.VISIBLE);
     }
 
     @Override

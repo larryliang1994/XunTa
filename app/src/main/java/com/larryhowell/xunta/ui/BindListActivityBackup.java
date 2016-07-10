@@ -15,10 +15,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.transition.Fade;
 import android.util.Pair;
 import android.view.View;
-import android.view.Window;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -42,7 +40,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import me.drakeet.materialdialog.MaterialDialog;
 
-public class BindListActivity extends AppCompatActivity
+public class BindListActivityBackup extends AppCompatActivity
         implements IGetBindListPresenter.IGetBindListView, IBindPresenter.IBindView {
     @Bind(R.id.toolbar)
     Toolbar mToolbar;
@@ -53,8 +51,14 @@ public class BindListActivity extends AppCompatActivity
     @Bind(R.id.swipeRefreshLayout)
     SwipeRefreshLayout mSwipeRefreshLayout;
 
+    @Bind(R.id.floating_actions)
+    FloatingActionsMenu mFloatingActionsMenu;
+
     @Bind(R.id.appBar)
     AppBarLayout mAppBarLayout;
+
+    @Bind(R.id.fab)
+    FloatingActionButton mFloatingActionButton;
 
     private BindListAdapter mAdapter;
     private ProgressDialog mProgressDialog;
@@ -106,6 +110,14 @@ public class BindListActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        mFloatingActionButton.setVisibility(View.GONE);
+        MobclickAgent.onResume(this);
+    }
+
+    @Override
     public void OnGetBindListResult(Boolean result, String info) {
         mSwipeRefreshLayout.setRefreshing(false);
 
@@ -115,11 +127,11 @@ public class BindListActivity extends AppCompatActivity
 
                 mAdapter.setOnItemClickListener((view, person) -> {
                     //mFloatingActionButton.setVisibility(View.VISIBLE);
-                    Intent intent = new Intent(BindListActivity.this, MemberMainActivity.class);
+                    Intent intent = new Intent(BindListActivityBackup.this, MemberMainActivity.class);
                     intent.putExtra("person", person);
                     startActivity(intent,
                             ActivityOptions.makeSceneTransitionAnimation(
-                                    BindListActivity.this,
+                                    BindListActivityBackup.this,
                                     //Pair.create(mFloatingActionButton, "fab"),
                                     Pair.create(mAppBarLayout, "appBar")).toBundle());
                 });
@@ -133,11 +145,17 @@ public class BindListActivity extends AppCompatActivity
         }
     }
 
-    @OnClick({R.id.fab})
+    @OnClick({R.id.fab_qr, R.id.fab_input})
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.fab:
+            case R.id.fab_qr:
+                startActivity(new Intent(this, CaptureActivity.class));
+                mFloatingActionsMenu.collapse();
+                break;
+
+            case R.id.fab_input:
                 showAddMemberDialog();
+                mFloatingActionsMenu.collapse();
                 break;
         }
     }
@@ -169,7 +187,7 @@ public class BindListActivity extends AppCompatActivity
             } else {
                 mProgressDialog.show();
 
-                new BindPresenterImpl(BindListActivity.this).bind(editText.getText().toString());
+                new BindPresenterImpl(BindListActivityBackup.this).bind(editText.getText().toString());
             }
         }).setNegativeButton("取消", v -> {
             mDialog.dismiss();

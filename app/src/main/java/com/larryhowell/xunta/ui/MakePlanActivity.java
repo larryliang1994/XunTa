@@ -2,25 +2,33 @@ package com.larryhowell.xunta.ui;
 
 import android.app.ActivityOptions;
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.larryhowell.xunta.R;
 import com.larryhowell.xunta.bean.LocationSuggestion;
 import com.larryhowell.xunta.bean.MyDate;
 import com.larryhowell.xunta.bean.MyTime;
+import com.larryhowell.xunta.bean.Plan;
+import com.larryhowell.xunta.common.Config;
 import com.larryhowell.xunta.common.Constants;
 import com.larryhowell.xunta.common.UtilBox;
+import com.larryhowell.xunta.presenter.IPlanPresenter;
+import com.larryhowell.xunta.presenter.PlanPresenterImpl;
 import com.larryhowell.xunta.widget.DateDialog;
 import com.larryhowell.xunta.widget.TimeDialog;
 
@@ -31,7 +39,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class MakePlanActivity extends BaseActivity
-        implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
+        implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener, IPlanPresenter.IPlanView {
     @Bind(R.id.toolbar)
     Toolbar mToolbar;
 
@@ -67,6 +75,7 @@ public class MakePlanActivity extends BaseActivity
             hour_arrival = 0, minute_arrival = 0,
             year_startTime = 0, month_startTime = 0, day_startTime = 0,
             hour_startTime = 0, minute_startTime = 0;
+    private ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -116,6 +125,60 @@ public class MakePlanActivity extends BaseActivity
         getMenuInflater().inflate(R.menu.make_plan, menu);
         return super.onCreateOptionsMenu(menu);
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_ok:
+                if (!Config.isConnected) {
+                    UtilBox.showSnackbar(this, R.string.cant_access_network);
+                } else if (year_arrival == 0) {
+                    UtilBox.showSnackbar(this, "请填入预计到达时间");
+                } else if (year_startTime == 0) {
+                    UtilBox.showSnackbar(this, "请填入开始时间");
+                } else if (departureSuggestion == null) {
+                    UtilBox.showSnackbar(this, "请填入出发地点");
+                } else if (terminalSuggestion == null) {
+                    UtilBox.showSnackbar(this, "请填入目的地");
+                } else {
+                    if(mProgressDialog == null) {
+                        mProgressDialog = new ProgressDialog(this);
+                        mProgressDialog.setMessage("发送中...");
+                        mProgressDialog.setCancelable(false);
+                    }
+
+                    mProgressDialog.show();
+
+                    new PlanPresenterImpl(this).makePlan(new Plan(
+                            mDescEditText.getText().toString(),
+                            grade,
+                            UtilBox.getStringToDate(mStartTimeEditText.getText().toString()) / 1000 + "",
+                            UtilBox.getStringToDate(mArrivalEditText.getText().toString()) / 1000 + "",
+                            departureSuggestion.getInfo(),
+                            terminalSuggestion.getInfo()
+                    ));
+                }
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onMakePlanResult(Boolean result, String info) {
+        mProgressDialog.dismiss();
+
+        if(result) {
+            Toast.makeText(this, "计划发布成功", Toast.LENGTH_SHORT).show();
+            //UtilBox.showSnackbar(this, "计划发布成功");
+            finish();
+        } else {
+            UtilBox.showSnackbar(this, info);
+        }
+    }
+
+    @Override
+    public void onGetPlanResult(Boolean result, String info) {}
 
     @OnClick({R.id.edt_startTime, R.id.edt_arrival,
             R.id.edt_departure, R.id.edt_terminal})

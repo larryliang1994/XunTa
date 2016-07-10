@@ -20,6 +20,14 @@ public class LocationSuggestion implements SearchSuggestion {
         info = (PoiInfo) parcel.readValue(PoiInfo.class.getClassLoader());
     }
 
+    public PoiInfo getInfo() {
+        return info;
+    }
+
+    public void setInfo(PoiInfo info) {
+        this.info = info;
+    }
+
     public void setIsHistory(boolean isHistory) {
         this.mIsHistory = isHistory;
     }
