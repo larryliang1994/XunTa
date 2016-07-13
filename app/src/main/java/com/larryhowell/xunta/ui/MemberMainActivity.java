@@ -1,23 +1,18 @@
 package com.larryhowell.xunta.ui;
 
 import android.support.design.widget.TabLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-
-import android.widget.TextView;
 
 import com.larryhowell.xunta.R;
+import com.larryhowell.xunta.bean.Person;
 import com.larryhowell.xunta.widget.CustomViewPager;
 
 import butterknife.Bind;
@@ -34,9 +29,10 @@ public class MemberMainActivity extends BaseActivity {
     @Bind(R.id.container)
     CustomViewPager mViewPager;
 
-    private SectionsPagerAdapter mSectionsPagerAdapter;
-    private MemberMapFragment mMapFragment;
-    private MemberPlanFragment mPlanFragment;
+    public MemberMapFragment mMapFragment;
+    public MemberPlanFragment mPlanFragment;
+    public MemberLocationListFragment mLocationListFragment;
+    public Person mPerson;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,51 +41,46 @@ public class MemberMainActivity extends BaseActivity {
 
         ButterKnife.bind(this);
 
+        mPerson = (Person) getIntent().getSerializableExtra("person");
+
+        initView();
+    }
+
+    private void initView() {
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         mViewPager.setOffscreenPageLimit(3);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
         mTabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(this, R.color.white));
         mTabLayout.setupWithViewPager(mViewPager);
-    }
+        mTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if (tab.getPosition() == 0) {
+                    mMapFragment.refresh();
+                } else if (tab.getPosition() == 1) {
+                    mPlanFragment.refresh();
+                } else {
+                    mLocationListFragment.refresh();
+                }
+            }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
 
-        public PlaceholderFragment() {
-        }
+            }
 
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
 
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_member_main, container, false);
-            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
-            return rootView;
-        }
+            }
+        });
+
+        mToolbar.setTitle(mPerson.getNickname());
     }
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -113,7 +104,11 @@ public class MemberMainActivity extends BaseActivity {
 
                 return mPlanFragment;
             } else {
-                return PlaceholderFragment.newInstance(position + 1);
+                if (mLocationListFragment == null) {
+                    mLocationListFragment = new MemberLocationListFragment();
+                }
+
+                return mLocationListFragment;
             }
         }
 
@@ -132,5 +127,22 @@ public class MemberMainActivity extends BaseActivity {
             }
             return null;
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        mMapFragment.mMapView.setVisibility(View.GONE);
+        super.onBackPressed();
     }
 }

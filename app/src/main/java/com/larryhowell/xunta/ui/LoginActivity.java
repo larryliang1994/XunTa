@@ -1,21 +1,17 @@
 package com.larryhowell.xunta.ui;
 
-import android.app.ActivityOptions;
 import android.app.ProgressDialog;
-import android.content.Intent;
-import android.support.design.widget.AppBarLayout;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Pair;
-import android.widget.Button;
+import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.balysv.materialripple.MaterialRippleLayout;
 import com.larryhowell.xunta.R;
 import com.larryhowell.xunta.common.Config;
-import com.larryhowell.xunta.common.Constants;
 import com.larryhowell.xunta.common.UtilBox;
 import com.larryhowell.xunta.presenter.ILoginPresenter;
 import com.larryhowell.xunta.presenter.LoginPresenterImpl;
@@ -32,12 +28,6 @@ public class LoginActivity extends AppCompatActivity implements ILoginPresenter.
 
     @Bind(R.id.rl_login)
     MaterialRippleLayout mRippleLayout;
-
-    @Bind(R.id.appBar)
-    AppBarLayout mAppBarLayout;
-
-    @Bind(R.id.btn_login)
-    Button mButton;
 
     private ProgressDialog mProgressDialog;
 
@@ -80,8 +70,22 @@ public class LoginActivity extends AppCompatActivity implements ILoginPresenter.
     }
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public void onLoginResult(Boolean result, String info) {
-        mProgressDialog.dismiss();
+        if (mProgressDialog.isShowing()) {
+            new Handler().postDelayed(() -> mProgressDialog.dismiss(), 500);
+        }
+
         if (result) {
             Toast.makeText(this, "登录成功", Toast.LENGTH_SHORT).show();
             setResult(RESULT_OK);

@@ -23,8 +23,6 @@ import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
-import com.tencent.bugly.Bugly;
-import com.tencent.bugly.crashreport.BuglyLog;
 import com.tencent.bugly.crashreport.CrashReport;
 
 import java.io.ByteArrayOutputStream;
@@ -35,6 +33,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -337,7 +336,8 @@ public class UtilBox {
 
     public static String DATE = "MM-dd";
     public static String TIME = "HH:mm";
-    public static String DATE_TIME = "MM-dd HH:mm";
+    public static String TIME_S = "HH:mm:ss";
+    public static String DATE_TIME = "yyyy-MM-dd HH:mm";
 
     /**
      * 时间戳转换成字符串
@@ -368,6 +368,25 @@ public class UtilBox {
         }
 
         return date.getTime();
+    }
+
+    public static String dateDifference(String date1, String date2) throws ParseException {
+        long l = Long.valueOf(date2) - Long.valueOf(date1);
+        long day = l / (24 * 60 * 60 * 1000);
+        long hour = (l / (60 * 60 * 1000) - day * 24);
+        long min = ((l / (60 * 1000)) - day * 24 * 60 - hour * 60);
+        long s = (l / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
+        hour += day * 24;
+
+        String output = "";
+
+        output += hour >= 10 ? "" + hour : "0" + hour;
+        output += ":";
+        output += min >= 10 ? "" + min : "0" + min;
+        output += ":";
+        output += s >= 10? "" + s : "0" + s;
+
+        return output;
     }
 
     /**
@@ -569,5 +588,9 @@ public class UtilBox {
         }
 
         return null;
+    }
+
+    public static String getCurrentTime() {
+        return String.valueOf(Calendar.getInstance().getTimeInMillis());
     }
 }

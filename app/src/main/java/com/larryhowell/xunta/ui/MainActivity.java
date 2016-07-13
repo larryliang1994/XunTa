@@ -1,29 +1,26 @@
 package com.larryhowell.xunta.ui;
 
+import android.Manifest;
 import android.app.ActivityOptions;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
-import android.transition.Fade;
-import android.util.Log;
 import android.util.Pair;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.alibaba.sdk.android.ut.impl.UTLifecycleAdapter;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
@@ -35,6 +32,7 @@ import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.search.core.PoiInfo;
 import com.baidu.mapapi.search.geocode.GeoCodeResult;
 import com.baidu.mapapi.search.geocode.GeoCoder;
 import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
@@ -42,13 +40,18 @@ import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.balysv.materialripple.MaterialRippleLayout;
 import com.larryhowell.xunta.R;
+import com.larryhowell.xunta.bean.Location;
 import com.larryhowell.xunta.common.Config;
 import com.larryhowell.xunta.common.Constants;
 import com.larryhowell.xunta.common.UtilBox;
+import com.larryhowell.xunta.presenter.ILocationPresenter;
 import com.larryhowell.xunta.presenter.IUpdatePresenter;
+import com.larryhowell.xunta.presenter.LocationPresenterImpl;
 import com.larryhowell.xunta.presenter.UpdatePresenterImpl;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.umeng.analytics.MobclickAgent;
+
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -56,7 +59,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener, BDLocationListener,
-        View.OnClickListener, IUpdatePresenter.IUpdateView {
+        View.OnClickListener, IUpdatePresenter.IUpdateView, ILocationPresenter.ILocationView {
 
     @Bind(R.id.mapView)
     MapView mMapView;
@@ -81,6 +84,8 @@ public class MainActivity extends BaseActivity
 
     private CircleImageView mNavigationPortraitImageView;
     private TextView mNicknameTextView;
+    private int versionCode = 2;
+    private boolean isFirstLoc = true;
 
     public LocationClient mLocationClient = null;
 
@@ -124,6 +129,23 @@ public class MainActivity extends BaseActivity
                 //startActivity(new Intent(MainActivity.this, BindListActivity.class));
             }
         });
+
+        PackageManager pkgManager = getPackageManager();
+
+        boolean fineLocationPermission = pkgManager.checkPermission(
+                Manifest.permission.ACCESS_FINE_LOCATION, getPackageName())
+                == PackageManager.PERMISSION_GRANTED;
+
+        boolean coarseLocationPermission = pkgManager.checkPermission(
+                Manifest.permission.ACCESS_COARSE_LOCATION, getPackageName())
+                == PackageManager.PERMISSION_GRANTED;
+
+        if (!fineLocationPermission || !coarseLocationPermission) {
+            ActivityCompat.requestPermissions(this, new String[]{
+                            android.Manifest.permission.ACCESS_FINE_LOCATION,
+                            android.Manifest.permission.ACCESS_COARSE_LOCATION},
+                    0);
+        }
     }
 
     private void showLoginDialog() {
@@ -162,8 +184,6 @@ public class MainActivity extends BaseActivity
         mLocationClient.setLocOption(option);
     }
 
-    Boolean isFirstLoc = true;
-
     @Override
     public void onReceiveLocation(BDLocation location) {
         BaiduMap mBaiduMap = mMapView.getMap();
@@ -198,9 +218,23 @@ public class MainActivity extends BaseActivity
             public void onGetReverseGeoCodeResult(ReverseGeoCodeResult reverseGeoCodeResult) {
                 String address = reverseGeoCodeResult.getAddress();
 
-                Config.currentCity = address.substring(address.indexOf("省") + 1, address.indexOf("市"));
+                if (address == null || "".equals(address)) {
+                    return;
+                }
+
+                if (address.contains("省")) {
+                    Config.currentCity = address.substring(address.indexOf("省") + 1, address.indexOf("市"));
+                } else {
+                    Config.currentCity = address.substring(0, address.indexOf("市"));
+                }
 
                 Config.currentCityDetail = address.substring(address.indexOf("市") + 1, address.length());
+
+                PoiInfo location = new PoiInfo();
+                location.name = address;
+                location.location = new LatLng(locData.latitude, locData.longitude);
+
+                new LocationPresenterImpl(MainActivity.this).sendLocation(location);
             }
         });
         geoCoder.reverseGeoCode(option);
@@ -231,29 +265,32 @@ public class MainActivity extends BaseActivity
         // 获取抽屉的头像
         mNavigationPortraitImageView = (CircleImageView) mNavigationView.getHeaderView(0).findViewById(R.id.iv_navigation);
         if (!"".equals(Config.portrait)) {
-            ImageLoader.getInstance().displayImage(Config.portrait, mNavigationPortraitImageView);
+            ImageLoader.getInstance().displayImage
+                    (Config.portrait + "&w=" + UtilBox.dip2px(this, 80) + "&h=" + UtilBox.dip2px(this, 80),
+                            mNavigationPortraitImageView);
         }
 
-        mNavigationView.getHeaderView(0).findViewById(R.id.ll_nvHeader).setBackgroundResource(R.drawable.nav_header_background);
         mNavigationView.getHeaderView(0).findViewById(R.id.ll_nvHeader).setOnClickListener(this);
     }
 
     @Override
     public void onGetVersionResult(Boolean result, String info) {
-        if(result) {
-            int versionCode = UtilBox.getPackageInfo(this).versionCode;
+        if (result) {
+            int currentVersion = UtilBox.getPackageInfo(this).versionCode;
 
-            if(Integer.valueOf(info).compareTo(versionCode) <= 0) {
+            versionCode = Integer.valueOf(info);
+
+            if (currentVersion >= versionCode) {
                 return;
             }
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_NoActionBar_MinWidth);
             builder.setTitle("是否更新")
-                    .setMessage("当前版本:" + versionCode + "\n最新版本:" + info)
+                    .setMessage("当前版本:" + versionCode + "\n最新版本:" + versionCode)
                     .setCancelable(true)
                     .setPositiveButton("更新", (dialog, which) -> {
-                        Uri uri = Uri.parse("http://xunta.file.alimmdn.com/xunta_" + info + ".apk");
-                        startActivity(new Intent(Intent.ACTION_VIEW,uri));
+                        Uri uri = Uri.parse("http://xunta.file.alimmdn.com/xunta_" + versionCode + ".apk");
+                        startActivity(new Intent(Intent.ACTION_VIEW, uri));
                     })
                     .setNegativeButton("取消", null);
 
@@ -270,7 +307,10 @@ public class MainActivity extends BaseActivity
         if (mDrawer.isDrawerOpen(GravityCompat.START)) {
             mDrawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            Intent i = new Intent(Intent.ACTION_MAIN);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            i.addCategory(Intent.CATEGORY_HOME);
+            startActivity(i);
         }
     }
 
@@ -280,51 +320,73 @@ public class MainActivity extends BaseActivity
             case R.id.ll_nvHeader:
             case R.id.iv_navigation:
             case R.id.tv_navigation_nickname:
-                startActivity(new Intent(this, UserInfoActivity.class));
-                mDrawer.closeDrawer(GravityCompat.START);
+                if (Config.telephone == null || "".equals(Config.telephone)) {
+                    showLoginDialog();
+                } else {
+                    startActivityForResult(new Intent(this, UserInfoActivity.class),
+                            Constants.CODE_USER_INFO,
+                            ActivityOptions.makeSceneTransitionAnimation(this, mAppBarLayout, "appBar").toBundle());
+                    mDrawer.closeDrawer(GravityCompat.START);
+                }
                 break;
         }
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
+        if (Config.telephone == null || "".equals(Config.telephone)) {
+            showLoginDialog();
+            return true;
+        }
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        switch (item.getItemId()) {
+            case R.id.nav_user_info:
+                startActivityForResult(new Intent(this, UserInfoActivity.class), Constants.CODE_USER_INFO,
+                        ActivityOptions.makeSceneTransitionAnimation(this, mAppBarLayout, "appBar").toBundle());
+                break;
 
-        } else if (id == R.id.nav_slideshow) {
+            case R.id.nav_bind_list:
+                startActivity(
+                        new Intent(MainActivity.this, BindListActivity.class)
+                        , ActivityOptions.makeSceneTransitionAnimation(
+                                MainActivity.this,
+                                Pair.create(mAppBarLayout, "appBar")
+                        ).toBundle());
+                break;
 
-        } else if (id == R.id.nav_manage) {
+            case R.id.nav_share:
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("text/plain"); // 纯文本
+                intent.putExtra(Intent.EXTRA_TEXT, "寻ta下载地址: http://xunta.file.alimmdn.com/xunta_" + versionCode + ".apk");
+                intent.putExtra(Intent.EXTRA_SUBJECT, "分享");
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(Intent.createChooser(intent, getTitle()));
+                break;
 
-        } else if (id == R.id.nav_share) {
+            case R.id.nav_logout:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_NoActionBar_MinWidth);
+                builder.setMessage("真的要注销吗")
+                        .setNegativeButton("假的", (dialog, which) -> {
 
-        } else if (id == R.id.nav_logout) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_NoActionBar_MinWidth);
-            builder.setMessage("真的要注销吗")
-                    .setNegativeButton("假的", (dialog, which) -> {
+                        })
+                        .setPositiveButton("真的", (dialog, which) -> {
+                            UtilBox.clearAllData(MainActivity.this);
 
-                    })
-                    .setPositiveButton("真的", (dialog, which) -> {
-                        UtilBox.clearAllData(MainActivity.this);
+                            mNavigationPortraitImageView.setImageResource(R.drawable.portrait_default);
 
-                        ImageLoader.getInstance().displayImage(Config.portrait, mNavigationPortraitImageView);
-                        mNicknameTextView.setText(Config.nickname);
+                            mNicknameTextView.setText(Config.nickname);
 
-                        //UtilBox.showSnackbar(MainActivity.this, "已注销");
-
-                        Toast.makeText(MainActivity.this, "已注销", Toast.LENGTH_SHORT).show();
-                    })
-                    .setCancelable(true);
-            AlertDialog dialog = builder.create();
-            dialog.setCanceledOnTouchOutside(true);
-            dialog.show();
+                            Toast.makeText(MainActivity.this, "已注销", Toast.LENGTH_SHORT).show();
+                        })
+                        .setCancelable(true);
+                AlertDialog dialog = builder.create();
+                dialog.setCanceledOnTouchOutside(true);
+                dialog.show();
+                break;
         }
 
         mDrawer.closeDrawer(GravityCompat.START);
+
         return true;
     }
 
@@ -334,10 +396,16 @@ public class MainActivity extends BaseActivity
 
         switch (requestCode) {
             case Constants.CODE_LOGIN:
+            case Constants.CODE_USER_INFO:
                 if (resultCode == RESULT_OK) {
-                    ImageLoader.getInstance().displayImage(Config.portrait, mNavigationPortraitImageView);
+                    ImageLoader.getInstance().displayImage(
+                            Config.portrait + "&w=" + UtilBox.dip2px(this, 80) + "&h=" + UtilBox.dip2px(this, 80),
+                            mNavigationPortraitImageView);
                     mNicknameTextView.setText(Config.nickname);
-                    mDrawer.openDrawer(GravityCompat.START);
+
+                    if (requestCode == Constants.CODE_LOGIN) {
+                        mDrawer.openDrawer(GravityCompat.START);
+                    }
                 }
                 break;
         }
@@ -354,6 +422,10 @@ public class MainActivity extends BaseActivity
         super.onResume();
         mMapView.onResume();
         mMapView.setVisibility(View.VISIBLE);
+
+        isFirstLoc = true;
+        mLocationClient.start();
+
         MobclickAgent.onResume(this);
     }
 
@@ -361,7 +433,22 @@ public class MainActivity extends BaseActivity
     public void onPause() {
         super.onPause();
         mMapView.onPause();
-        mMapView.setVisibility(View.GONE);
+
         MobclickAgent.onPause(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        mMapView.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onGetLocationResult(Boolean result, PoiInfo location) {
+    }
+
+    @Override
+    public void onGetLocationListResult(Boolean result, String info, List<Location> locationList) {
     }
 }

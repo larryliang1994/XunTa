@@ -5,9 +5,6 @@ import android.os.Parcel;
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
 import com.baidu.mapapi.search.core.PoiInfo;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class LocationSuggestion implements SearchSuggestion {
     private PoiInfo info;
     private boolean mIsHistory = false;

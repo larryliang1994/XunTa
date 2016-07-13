@@ -3,26 +3,17 @@ package com.larryhowell.xunta.ui;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Parcel;
 import android.support.annotation.Nullable;
 import android.support.v4.content.res.ResourcesCompat;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.transition.Slide;
-import android.util.Log;
-import android.view.View;
 import android.view.Window;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
-import com.arlib.floatingsearchview.suggestions.SearchSuggestionsAdapter;
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
 import com.arlib.floatingsearchview.util.Util;
 import com.baidu.mapapi.search.core.PoiInfo;
 import com.baidu.mapapi.search.poi.OnGetPoiSearchResultListener;
-import com.baidu.mapapi.search.poi.PoiAddrInfo;
 import com.baidu.mapapi.search.poi.PoiCitySearchOption;
 import com.baidu.mapapi.search.poi.PoiDetailResult;
 import com.baidu.mapapi.search.poi.PoiResult;
@@ -32,7 +23,6 @@ import com.larryhowell.xunta.bean.LocationSuggestion;
 import com.larryhowell.xunta.common.Config;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import butterknife.Bind;

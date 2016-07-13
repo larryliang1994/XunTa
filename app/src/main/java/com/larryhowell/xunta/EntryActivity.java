@@ -1,26 +1,32 @@
 package com.larryhowell.xunta;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.view.View;
 import android.widget.LinearLayout;
 
 import com.baidu.mapapi.SDKInitializer;
+import com.igexin.sdk.PushManager;
 import com.larryhowell.xunta.common.Config;
 import com.larryhowell.xunta.common.Constants;
 import com.larryhowell.xunta.common.UtilBox;
 import com.larryhowell.xunta.net.MediaServiceUtil;
 import com.larryhowell.xunta.net.OkHttpUtil;
-import com.larryhowell.xunta.presenter.GetUserInfoPresenterImpl;
-import com.larryhowell.xunta.presenter.IGetUserInfoPresenter;
-import com.larryhowell.xunta.ui.BaseActivity;
+import com.larryhowell.xunta.presenter.UserInfoPresenterImpl;
+import com.larryhowell.xunta.presenter.IUserInfoPresenter;
 import com.larryhowell.xunta.ui.MainActivity;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -32,14 +38,11 @@ import com.taobao.tae.sdk.callback.InitResultCallback;
 import com.tencent.bugly.crashreport.CrashReport;
 import com.umeng.analytics.MobclickAgent;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class EntryActivity extends Activity implements IGetUserInfoPresenter.IGetUserInfoView {
+public class EntryActivity extends Activity implements IUserInfoPresenter.IUserInfoView {
     @Bind(R.id.ll_no_network)
     LinearLayout mNoNetworkLinearLayout;
 
@@ -94,12 +97,13 @@ public class EntryActivity extends Activity implements IGetUserInfoPresenter.IGe
             UtilBox.showSnackbar(EntryActivity.this, R.string.cant_access_network);
         } else {
             // 获取用户信息
-            new GetUserInfoPresenterImpl(this).getUserInfo(Config.telephone);
+            new UserInfoPresenterImpl(this).getUserInfo(Config.telephone);
         }
     }
 
     @Override
     public void onGetUserInfoResult(Boolean result, String info) {
+        changeLoadingState("dismiss");
         if (result) {
             startActivity(new Intent(EntryActivity.this, MainActivity.class));
 
@@ -115,6 +119,9 @@ public class EntryActivity extends Activity implements IGetUserInfoPresenter.IGe
             UtilBox.showSnackbar(this, info);
         }
     }
+
+    @Override
+    public void onUpdateNickname(Boolean result, String info) {}
 
     @OnClick(R.id.btn_reconnect)
     public void onClick(View v) {
@@ -132,7 +139,9 @@ public class EntryActivity extends Activity implements IGetUserInfoPresenter.IGe
         if ("show".equals(which)) {
             runOnUiThread(mDialog::show);
         } else if ("dismiss".equals(which)) {
-            runOnUiThread(mDialog::dismiss);
+            if (mDialog.isShowing()) {
+                new Handler().postDelayed(() -> mDialog.dismiss(), 500);
+            }
         }
     }
 
@@ -140,8 +149,8 @@ public class EntryActivity extends Activity implements IGetUserInfoPresenter.IGe
         // 启动崩溃统计
         CrashReport.initCrashReport(getApplicationContext(), Constants.BUGLY_APP_ID, false);
 
-        // 初始化请求队列
-        //VolleyUtil.initRequestQueue(getApplicationContext());
+        // 初始化请求
+        OkHttpUtil.init(getApplicationContext());
 
         // 初始化网络状态
         getNetworkState();
@@ -153,7 +162,7 @@ public class EntryActivity extends Activity implements IGetUserInfoPresenter.IGe
         initImageLoader();
 
         // 开启推送服务
-        //initPushAgent();
+        initPushManager();
 
         // 初始化百度地图
         SDKInitializer.initialize(getApplicationContext());
@@ -161,6 +170,24 @@ public class EntryActivity extends Activity implements IGetUserInfoPresenter.IGe
         // 初始化数据统计
         MobclickAgent.startWithConfigure(new MobclickAgent.UMAnalyticsConfig(
                 getApplicationContext(), Constants.UMENG_APP_KEY, "developer"));
+    }
+
+    private void initPushManager() {
+        PackageManager pkgManager = getPackageManager();
+        // 读写 sd card 权限非常重要, android6.0默认禁止的, 建议初始化之前就弹窗让用户赋予该权限
+        boolean sdCardWritePermission =
+                pkgManager.checkPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE, getPackageName()) == PackageManager.PERMISSION_GRANTED;
+
+        // read phone state用于获取 imei 设备信息
+        boolean phoneSatePermission =
+                pkgManager.checkPermission(android.Manifest.permission.READ_PHONE_STATE, getPackageName()) == PackageManager.PERMISSION_GRANTED;
+
+        if (Build.VERSION.SDK_INT >= 23 && !sdCardWritePermission || !phoneSatePermission) {
+            ActivityCompat.requestPermissions(this, new String[] {android.Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_PHONE_STATE},
+                    0);
+        } else {
+            PushManager.getInstance().initialize(this.getApplicationContext());
+        }
     }
 
     private void getNetworkState() {
@@ -179,6 +206,7 @@ public class EntryActivity extends Activity implements IGetUserInfoPresenter.IGe
         Config.telephone = sp.getString(Constants.SP_KEY_TELEPHONE, "");
         Config.nickname = sp.getString(Constants.SP_KEY_NICKNAME, "昵称");
         Config.portrait = sp.getString(Constants.SP_KEY_PORTRAIT, "");
+        Config.time = sp.getString(Constants.SP_KEY_TIME, "");
     }
 
     private void initImageLoader() {
@@ -193,6 +221,15 @@ public class EntryActivity extends Activity implements IGetUserInfoPresenter.IGe
                 .tasksProcessingOrder(QueueProcessingType.FIFO).build();
         L.writeLogs(false);
         ImageLoader.getInstance().init(config);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 0) {
+            PushManager.getInstance().initialize(this.getApplicationContext());
+        } else {
+            onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 
     @Override

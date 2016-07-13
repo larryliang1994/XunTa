@@ -6,9 +6,9 @@ import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,6 +23,7 @@ import com.larryhowell.xunta.R;
 import com.larryhowell.xunta.bean.LocationSuggestion;
 import com.larryhowell.xunta.bean.MyDate;
 import com.larryhowell.xunta.bean.MyTime;
+import com.larryhowell.xunta.bean.Person;
 import com.larryhowell.xunta.bean.Plan;
 import com.larryhowell.xunta.common.Config;
 import com.larryhowell.xunta.common.Constants;
@@ -76,6 +77,7 @@ public class MakePlanActivity extends BaseActivity
             year_startTime = 0, month_startTime = 0, day_startTime = 0,
             hour_startTime = 0, minute_startTime = 0;
     private ProgressDialog mProgressDialog;
+    private Person mPerson;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -84,6 +86,8 @@ public class MakePlanActivity extends BaseActivity
         setContentView(R.layout.activity_make_plan);
 
         ButterKnife.bind(this);
+
+        mPerson = (Person) getIntent().getSerializableExtra("person");
 
         initView();
     }
@@ -102,11 +106,11 @@ public class MakePlanActivity extends BaseActivity
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 switch (progress) {
-                    case 0: mGradeTextView.setText("D");  grade = 5;  break;
-                    case 1: mGradeTextView.setText("C");  grade = 4;  break;
-                    case 2: mGradeTextView.setText("B");  grade = 3;  break;
-                    case 3: mGradeTextView.setText("A");  grade = 2;  break;
-                    case 4: mGradeTextView.setText("S");  grade = 1;  break;
+                    case 0: mGradeTextView.setText("D");  grade = 4;  break;
+                    case 1: mGradeTextView.setText("C");  grade = 3;  break;
+                    case 2: mGradeTextView.setText("B");  grade = 2;  break;
+                    case 3: mGradeTextView.setText("A");  grade = 1;  break;
+                    case 4: mGradeTextView.setText("S");  grade = 0;  break;
                 }
             }
 
@@ -150,15 +154,20 @@ public class MakePlanActivity extends BaseActivity
                     mProgressDialog.show();
 
                     new PlanPresenterImpl(this).makePlan(new Plan(
+                            mPerson.getTelephone(),
                             mDescEditText.getText().toString(),
                             grade,
-                            UtilBox.getStringToDate(mStartTimeEditText.getText().toString()) / 1000 + "",
-                            UtilBox.getStringToDate(mArrivalEditText.getText().toString()) / 1000 + "",
+                            UtilBox.getStringToDate(mStartTimeEditText.getText().toString()) + "",
+                            UtilBox.getStringToDate(mArrivalEditText.getText().toString()) + "",
                             departureSuggestion.getInfo(),
                             terminalSuggestion.getInfo()
                     ));
                 }
                 break;
+
+            case android.R.id.home:
+                onBackPressed();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -166,15 +175,22 @@ public class MakePlanActivity extends BaseActivity
 
     @Override
     public void onMakePlanResult(Boolean result, String info) {
-        mProgressDialog.dismiss();
+        if (mProgressDialog.isShowing()) {
+            new Handler().postDelayed(() -> mProgressDialog.dismiss(), 500);
+        }
 
         if(result) {
+            setResult(RESULT_OK);
             Toast.makeText(this, "计划发布成功", Toast.LENGTH_SHORT).show();
-            //UtilBox.showSnackbar(this, "计划发布成功");
             finish();
         } else {
             UtilBox.showSnackbar(this, info);
         }
+    }
+
+    @Override
+    public void onCancelPlanResult(Boolean result, String info) {
+
     }
 
     @Override
@@ -333,7 +349,7 @@ public class MakePlanActivity extends BaseActivity
                     if(isDeparture) {
                         mDepartureEditText.setText(suggestion.getBody());
                         departureSuggestion = suggestion;
-                    } else {
+                    } else if (isTerminal) {
                         mTerminalEditText.setText(suggestion.getBody());
                         terminalSuggestion = suggestion;
                     }

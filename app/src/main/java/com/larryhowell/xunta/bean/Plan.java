@@ -3,6 +3,7 @@ package com.larryhowell.xunta.bean;
 import com.baidu.mapapi.search.core.PoiInfo;
 
 public class Plan {
+    private String targetTelephone;
     private String desc;
     private int grade;
     private String startTime;
@@ -13,13 +14,23 @@ public class Plan {
     public Plan() {
     }
 
-    public Plan(String desc, int grade, String startTime, String arrival, PoiInfo departure, PoiInfo terminal) {
+    public Plan(String targetTelephone, String desc, int grade, String startTime,
+                String arrival, PoiInfo departure, PoiInfo terminal) {
+        this.targetTelephone = targetTelephone;
         this.desc = desc;
         this.grade = grade;
         this.startTime = startTime;
         this.arrival = arrival;
         this.departure = departure;
         this.terminal = terminal;
+    }
+
+    public String getTargetTelephone() {
+        return targetTelephone;
+    }
+
+    public void setTargetTelephone(String targetTelephone) {
+        this.targetTelephone = targetTelephone;
     }
 
     public String getDesc() {

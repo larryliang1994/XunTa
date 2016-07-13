@@ -2,14 +2,10 @@ package com.larryhowell.xunta.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.balysv.materialripple.MaterialRippleLayout;
@@ -21,7 +17,6 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import de.hdodenhof.circleimageview.CircleImageView;
 
 public class BindListAdapter extends RecyclerView.Adapter implements View.OnClickListener {
     private OnRecyclerViewItemClickListener mOnItemClickListener = null;
@@ -39,7 +34,6 @@ public class BindListAdapter extends RecyclerView.Adapter implements View.OnClic
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_body_member, parent, false);
-        view.setOnClickListener(this);
         return new ViewHolder(view);
     }
 
@@ -58,16 +52,18 @@ public class BindListAdapter extends RecyclerView.Adapter implements View.OnClic
                         UtilBox.dip2px(mContext, 45))
                         , holder.portraitImageView);
 
-        holder.bodyRippleViewLayout.setOnClickListener(this);
+        holder.bodyRippleViewLayout.setOnClickListener(view -> {
+            if (mOnItemClickListener != null) {
+                mOnItemClickListener.onItemClick(holder.bodyRippleViewLayout, person);
+            }
+        });
 
-        holder.itemView.setTag(person);
+
     }
 
     @Override
     public void onClick(View v) {
-        if (mOnItemClickListener != null) {
-            mOnItemClickListener.onItemClick(v, (Person) v.getTag());
-        }
+
     }
 
     @Override

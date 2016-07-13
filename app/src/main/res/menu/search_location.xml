@@ -5,10 +5,10 @@
         android:title="语音输入"
         android:orderInCategory="1"
         app:showAsAction="always"
-        android:icon="@drawable/ic_keyboard_voice_black_24dp"/>
+        android:icon="@drawable/voice"/>
     <item android:id="@+id/action_location"
         android:title="我的位置"
         android:orderInCategory="2"
         app:showAsAction="ifRoom"
-        android:icon="@drawable/ic_my_location_black_24dp"/>
+        android:icon="@drawable/my_location"/>
 </menu>

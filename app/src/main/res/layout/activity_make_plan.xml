@@ -72,10 +72,10 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:layout_gravity="center_vertical"
-                    android:src="@mipmap/grade" />
+                    android:src="@drawable/grade" />
 
                 <SeekBar
                     android:id="@+id/seekBar"
@@ -114,17 +114,17 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:layout_gravity="center_vertical"
-                    android:src="@mipmap/time" />
+                    android:src="@drawable/time" />
 
                 <EditText
                     android:id="@+id/edt_startTime"
                     android:layout_width="match_parent"
                     android:layout_height="64dp"
                     android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="12dp"
+                    android:layout_marginLeft="15dp"
                     android:background="@null"
                     android:focusable="false"
                     android:hint="开始时间"
@@ -165,18 +165,17 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:padding="5dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:layout_gravity="center_vertical"
-                    android:src="@mipmap/location" />
+                    android:src="@drawable/location" />
 
                 <EditText
                     android:id="@+id/edt_departure"
                     android:layout_width="match_parent"
                     android:layout_height="64dp"
                     android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="12dp"
+                    android:layout_marginLeft="15dp"
                     android:background="@null"
                     android:focusable="false"
                     android:hint="出发地点"

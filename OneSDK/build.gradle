@@ -13,8 +13,8 @@ android {
             storePassword 'leunghowell'
         }
     }
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    compileSdkVersion 24
+    buildToolsVersion '24.0.0'
     defaultConfig {
         minSdkVersion 8
         targetSdkVersion 23

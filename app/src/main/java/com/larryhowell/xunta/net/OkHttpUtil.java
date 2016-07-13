@@ -10,6 +10,7 @@ import com.zhy.http.okhttp.cookie.CookieJarImpl;
 import com.zhy.http.okhttp.cookie.store.PersistentCookieStore;
 import com.zhy.http.okhttp.https.HttpsUtils;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -25,7 +26,6 @@ public class OkHttpUtil {
                 .readTimeout(10000L, TimeUnit.MILLISECONDS)
                 .cookieJar(cookieJar)
                 .sslSocketFactory(sslParams.sSLSocketFactory, sslParams.trustManager)
-                //其他配置
                 .build();
 
         OkHttpUtils.initClient(okHttpClient);
@@ -38,6 +38,13 @@ public class OkHttpUtil {
             url += key + "=" + params.get(key) + "&";
         }
 
-        OkHttpUtils.get().url(url).build().execute(callback);
+        try {
+            String string = new String(url.getBytes(), "UTF-8");
+
+            OkHttpUtils.get().url(string).build().execute(callback);
+            Log.i("haha", string);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 }

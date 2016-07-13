@@ -1,41 +1,39 @@
 package com.larryhowell.xunta.ui;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.transition.Fade;
-import android.util.Pair;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.larryhowell.xunta.R;
 import com.larryhowell.xunta.adapter.BindListAdapter;
 import com.larryhowell.xunta.common.Config;
 import com.larryhowell.xunta.common.UtilBox;
 import com.larryhowell.xunta.presenter.BindPresenterImpl;
-import com.larryhowell.xunta.presenter.GetBindListPresenterImpl;
 import com.larryhowell.xunta.presenter.IBindPresenter;
-import com.larryhowell.xunta.presenter.IGetBindListPresenter;
 import com.larryhowell.xunta.widget.DividerItemDecoration;
-import com.larryhowell.xunta.zxing.activity.CaptureActivity;
-import com.umeng.analytics.MobclickAgent;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -43,7 +41,7 @@ import butterknife.OnClick;
 import me.drakeet.materialdialog.MaterialDialog;
 
 public class BindListActivity extends AppCompatActivity
-        implements IGetBindListPresenter.IGetBindListView, IBindPresenter.IBindView {
+        implements IBindPresenter.IBindView {
     @Bind(R.id.toolbar)
     Toolbar mToolbar;
 
@@ -55,6 +53,9 @@ public class BindListActivity extends AppCompatActivity
 
     @Bind(R.id.appBar)
     AppBarLayout mAppBarLayout;
+
+    @Bind(R.id.ll_empty)
+    LinearLayout mEmptyLinearLayout;
 
     private BindListAdapter mAdapter;
     private ProgressDialog mProgressDialog;
@@ -84,14 +85,26 @@ public class BindListActivity extends AppCompatActivity
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, null));
 
-        mProgressDialog = new ProgressDialog(this, android.R.style.Theme_Material);
+        mProgressDialog = new ProgressDialog(this);
         mProgressDialog.setMessage("绑定中...");
+        mProgressDialog.setCancelable(false);
 
         // 延迟执行才能使旋转进度条显示出来
         new Handler().postDelayed(() -> {
             mSwipeRefreshLayout.setRefreshing(true);
             refresh();
         }, 200);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void refresh() {
@@ -102,7 +115,9 @@ public class BindListActivity extends AppCompatActivity
             return;
         }
 
-        new GetBindListPresenterImpl(this).getBindList();
+        mSwipeRefreshLayout.setRefreshing(true);
+
+        new BindPresenterImpl(this).getBindList();
     }
 
     @Override
@@ -110,25 +125,32 @@ public class BindListActivity extends AppCompatActivity
         mSwipeRefreshLayout.setRefreshing(false);
 
         if (result) {
-            if (mAdapter == null) {
-                mAdapter = new BindListAdapter(this);
-
-                mAdapter.setOnItemClickListener((view, person) -> {
-                    //mFloatingActionButton.setVisibility(View.VISIBLE);
-                    Intent intent = new Intent(BindListActivity.this, MemberMainActivity.class);
-                    intent.putExtra("person", person);
-                    startActivity(intent,
-                            ActivityOptions.makeSceneTransitionAnimation(
-                                    BindListActivity.this,
-                                    //Pair.create(mFloatingActionButton, "fab"),
-                                    Pair.create(mAppBarLayout, "appBar")).toBundle());
-                });
-
-                mRecyclerView.setAdapter(mAdapter);
+            if (Config.bindList.size() == 0) {
+                mEmptyLinearLayout.setVisibility(View.VISIBLE);
+                mRecyclerView.setVisibility(View.GONE);
             } else {
-                mAdapter.notifyDataSetChanged();
+                mEmptyLinearLayout.setVisibility(View.GONE);
+                mRecyclerView.setVisibility(View.VISIBLE);
+                if (mAdapter == null) {
+                    mAdapter = new BindListAdapter(this);
+
+                    mAdapter.setOnItemClickListener((view, person) -> {
+                        Intent intent = new Intent(BindListActivity.this, MemberMainActivity.class);
+                        intent.putExtra("person", person);
+                        startActivity(intent,
+                                ActivityOptions.makeSceneTransitionAnimation(
+                                        BindListActivity.this,
+                                        mAppBarLayout, "appBar").toBundle());
+                    });
+
+                    mRecyclerView.setAdapter(mAdapter);
+                } else {
+                    mAdapter.notifyDataSetChanged();
+                }
             }
         } else {
+            mEmptyLinearLayout.setVisibility(View.VISIBLE);
+            mRecyclerView.setVisibility(View.GONE);
             UtilBox.showSnackbar(this, info);
         }
     }
@@ -142,6 +164,7 @@ public class BindListActivity extends AppCompatActivity
         }
     }
 
+    @SuppressLint("InflateParams")
     private void showAddMemberDialog() {
         final View contentView = getLayoutInflater().inflate(R.layout.dialog_input, null);
 
@@ -167,6 +190,7 @@ public class BindListActivity extends AppCompatActivity
                 mTextView.setVisibility(View.VISIBLE);
                 mTextView.setText("请输入11位手机号");
             } else {
+                mProgressDialog.setMessage("正在请求绑定...");
                 mProgressDialog.show();
 
                 new BindPresenterImpl(BindListActivity.this).bind(editText.getText().toString());
@@ -180,7 +204,10 @@ public class BindListActivity extends AppCompatActivity
 
     @Override
     public void onBindResult(Boolean result, String info) {
-        mProgressDialog.dismiss();
+
+        if (mProgressDialog.isShowing()) {
+            new Handler().postDelayed(() -> mProgressDialog.dismiss(), 500);
+        }
 
         if (result) {
             mDialog.dismiss();
@@ -188,6 +215,55 @@ public class BindListActivity extends AppCompatActivity
         } else {
             mTextView.setVisibility(View.VISIBLE);
             mTextView.setText(info);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (Config.message != null && !"".equals(Config.message)) {
+            try {
+                JSONObject jsonObject = new JSONObject(Config.message);
+
+                String nickname = jsonObject.getString("name");
+                String telephone = jsonObject.getString("telephone");
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_NoActionBar_MinWidth);
+
+                builder.setMessage("用户 " + nickname + " (手机号" + telephone + ")想与你绑定")
+                        .setCancelable(false)
+                        .setPositiveButton("绑定", (dialog, which) -> {
+                            mProgressDialog.setMessage("绑定中...");
+                            mProgressDialog.show();
+
+                            new BindPresenterImpl(BindListActivity.this).bindConfirm(true, telephone);
+                        })
+                        .setNegativeButton("拒绝", (dialog, which) -> {
+                            mProgressDialog.setMessage("请稍候...");
+                            mProgressDialog.show();
+
+                            new BindPresenterImpl(BindListActivity.this).bindConfirm(true, telephone);
+                        })
+                        .show();
+
+                Config.message = "";
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void onBindConfirmResult(Boolean result, String info) {
+        mProgressDialog.dismiss();
+
+        if (result) {
+            UtilBox.showSnackbar(this, "已完成");
+
+            refresh();
+        } else {
+            UtilBox.showSnackbar(this, info);
         }
     }
 }

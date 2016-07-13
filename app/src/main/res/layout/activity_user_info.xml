@@ -8,9 +8,11 @@
     tools:context=".ui.UserInfoActivity">
 
     <android.support.design.widget.AppBarLayout
+        android:id="@+id/appBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:theme="@style/AppTheme.AppBarOverlay"
+        android:transitionName="appBar">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
@@ -194,7 +196,7 @@
                         android:background="@color/divider" />
 
                     <com.balysv.materialripple.MaterialRippleLayout
-                        android:id="@+id/rv_history"
+                        android:id="@+id/rv_location"
                         android:layout_width="match_parent"
                         android:layout_height="60dp"
                         app:mrl_rippleAlpha="0.2"

@@ -1,7 +1,5 @@
 package com.larryhowell.xunta.presenter;
 
-import android.util.Log;
-
 import com.larryhowell.xunta.net.OkHttpUtil;
 import com.zhy.http.okhttp.callback.StringCallback;
 
