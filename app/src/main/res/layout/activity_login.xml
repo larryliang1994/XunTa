@@ -14,8 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fitsSystemWindows="true"
-        android:transitionName="appBar"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:theme="@style/AppTheme.AppBarOverlay"
+        android:transitionName="appBar">
 
         <android.support.design.widget.CollapsingToolbarLayout
             android:id="@+id/collapsingToolbarLayout"
@@ -88,26 +88,26 @@
                 android:layout_height="48dp"
                 android:layout_marginLeft="4dp"
                 android:layout_marginRight="4dp"
-                android:elevation="4dp"
                 android:layout_marginTop="16dp"
-                app:mrl_rippleColor="@color/rippleColor"
+                android:elevation="4dp"
                 app:mrl_rippleAlpha="0.1"
-                app:mrl_rippleOverlay="true"
-                app:mrl_rippleRoundedCorners="3dp"
+                app:mrl_rippleColor="@color/rippleColor"
+                app:mrl_rippleDelayClick="true"
                 app:mrl_rippleDuration="300"
-                app:mrl_rippleDelayClick="true">
+                app:mrl_rippleOverlay="true"
+                app:mrl_rippleRoundedCorners="3dp">
 
                 <Button
                     android:id="@+id/btn_login"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:transitionName="button"
                     android:background="@drawable/round_button_primary"
-                    android:text="开始"
                     android:clickable="false"
+                    android:text="开始"
                     android:textColor="#ffffff"
                     android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:transitionName="button" />
             </com.balysv.materialripple.MaterialRippleLayout>
 
         </LinearLayout>

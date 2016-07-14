@@ -31,10 +31,10 @@ public class UserInfoPresenterImpl implements IUserInfoPresenter {
             return;
         }
 
-        Map<String,String> params = new HashMap<>();
-        params.put("type","getUserInfo");
+        Map<String, String> params = new HashMap<>();
+        params.put("type", "getUserInfo");
         params.put("id", telephone);
-        params.put("operation","get");
+        params.put("operation", "get");
         params.put("name", Config.nickname);
         params.put("head_img", "");
         params.put("device_token", Config.device_token);
@@ -82,10 +82,10 @@ public class UserInfoPresenterImpl implements IUserInfoPresenter {
 
     @Override
     public void updateNickname(String name) {
-        Map<String,String> params = new HashMap<>();
-        params.put("type","updateUserInfo");
+        Map<String, String> params = new HashMap<>();
+        params.put("type", "updateUserInfo");
         params.put("id", Config.telephone);
-        params.put("operation","update");
+        params.put("operation", "update");
         params.put("name", name);
         params.put("head_img", "");
         params.put("device_token", Config.device_token);

@@ -131,7 +131,16 @@
             android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
-            android:name=".ui.LocationActivity"
+            android:name=".ui.MapActivity"
+            android:parentActivityName=".ui.MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.MainActivity" />
+        </activity>
+
+        <activity
+            android:name=".ui.LocationListActivity"
             android:parentActivityName=".ui.UserInfoActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data

@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     android:orientation="vertical">
 
     <LinearLayout
@@ -11,8 +12,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="50dp"
         android:gravity="center"
-        android:visibility="gone"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="gone">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -25,9 +26,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
+                android:text="3:15:12"
                 android:textColor="#ffffff"
-                android:textSize="50sp"
-                android:text="3:15:12"/>
+                android:textSize="50sp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -37,14 +38,14 @@
                 android:layout_marginRight="10dp"
                 android:layout_toLeftOf="@id/tv_time"
                 android:text="已进行"
-                android:textColor="#ffffff"/>
+                android:textColor="#ffffff" />
         </RelativeLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:background="@color/colorPrimary">
+            android:background="@color/colorPrimary"
+            android:padding="16dp">
 
             <ImageView
                 android:id="@+id/departure"
@@ -63,8 +64,8 @@
                 android:layout_marginTop="1dp"
                 android:background="@color/colorPrimary"
                 android:gravity="center"
-                android:textColor="#ffffff"
                 android:text="起"
+                android:textColor="#ffffff"
                 android:textSize="15sp" />
 
             <LinearLayout
@@ -80,18 +81,18 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="5dp"
                     android:layout_marginRight="16dp"
-                    android:textColor="#ffffff"
-                    android:lines="1"
                     android:ellipsize="marquee"
+                    android:lines="1"
                     android:text="南京航空航天大学江宁校区"
+                    android:textColor="#ffffff"
                     android:textSize="17sp" />
 
                 <TextView
                     android:id="@+id/tv_start_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#ffffff"
                     android:text="2016年7月11日 14:00"
+                    android:textColor="#ffffff"
                     android:textSize="15sp" />
             </LinearLayout>
 
@@ -100,13 +101,13 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#222222"/>
+            android:background="#222222" />
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:elevation="4dp"
             android:background="@color/colorPrimary"
+            android:elevation="4dp"
             android:padding="16dp">
 
             <ImageView
@@ -126,8 +127,8 @@
                 android:layout_marginTop="1dp"
                 android:background="@color/colorPrimary"
                 android:gravity="center"
-                android:textColor="#ffffff"
                 android:text="终"
+                android:textColor="#ffffff"
                 android:textSize="15sp" />
 
             <LinearLayout
@@ -142,11 +143,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="5dp"
-                    android:textColor="#ffffff"
                     android:layout_marginRight="16dp"
-                    android:lines="1"
                     android:ellipsize="marquee"
+                    android:lines="1"
                     android:text="一个很远很远的地方"
+                    android:textColor="#ffffff"
                     android:textSize="17sp" />
 
                 <TextView
@@ -169,10 +170,10 @@
             <com.balysv.materialripple.MaterialRippleLayout
                 android:id="@+id/ripple_find"
                 android:layout_width="0dp"
-                android:layout_weight="0.5"
                 android:layout_height="48dp"
-                android:elevation="4dp"
                 android:layout_marginRight="16dp"
+                android:layout_weight="0.5"
+                android:elevation="4dp"
                 app:mrl_rippleAlpha="0.1"
                 app:mrl_rippleColor="@color/rippleColor"
                 app:mrl_rippleDelayClick="true"
@@ -264,10 +265,10 @@
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="70dp"
-        android:src="@drawable/delete"
-        android:visibility="gone"
         android:layout_gravity="end|bottom"
-        android:transitionName="fab" />
+        android:layout_marginBottom="70dp"
+        android:layout_marginRight="16dp"
+        android:src="@drawable/delete"
+        android:transitionName="fab"
+        android:visibility="gone" />
 </android.support.design.widget.CoordinatorLayout>

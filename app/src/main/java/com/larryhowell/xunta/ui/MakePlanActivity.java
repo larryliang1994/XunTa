@@ -106,11 +106,26 @@ public class MakePlanActivity extends BaseActivity
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 switch (progress) {
-                    case 0: mGradeTextView.setText("D");  grade = 4;  break;
-                    case 1: mGradeTextView.setText("C");  grade = 3;  break;
-                    case 2: mGradeTextView.setText("B");  grade = 2;  break;
-                    case 3: mGradeTextView.setText("A");  grade = 1;  break;
-                    case 4: mGradeTextView.setText("S");  grade = 0;  break;
+                    case 0:
+                        mGradeTextView.setText("D");
+                        grade = 4;
+                        break;
+                    case 1:
+                        mGradeTextView.setText("C");
+                        grade = 3;
+                        break;
+                    case 2:
+                        mGradeTextView.setText("B");
+                        grade = 2;
+                        break;
+                    case 3:
+                        mGradeTextView.setText("A");
+                        grade = 1;
+                        break;
+                    case 4:
+                        mGradeTextView.setText("S");
+                        grade = 0;
+                        break;
                 }
             }
 
@@ -145,7 +160,7 @@ public class MakePlanActivity extends BaseActivity
                 } else if (terminalSuggestion == null) {
                     UtilBox.showSnackbar(this, "请填入目的地");
                 } else {
-                    if(mProgressDialog == null) {
+                    if (mProgressDialog == null) {
                         mProgressDialog = new ProgressDialog(this);
                         mProgressDialog.setMessage("发送中...");
                         mProgressDialog.setCancelable(false);
@@ -179,7 +194,7 @@ public class MakePlanActivity extends BaseActivity
             new Handler().postDelayed(() -> mProgressDialog.dismiss(), 500);
         }
 
-        if(result) {
+        if (result) {
             setResult(RESULT_OK);
             Toast.makeText(this, "计划发布成功", Toast.LENGTH_SHORT).show();
             finish();
@@ -194,7 +209,8 @@ public class MakePlanActivity extends BaseActivity
     }
 
     @Override
-    public void onGetPlanResult(Boolean result, String info) {}
+    public void onGetPlanResult(Boolean result, String info) {
+    }
 
     @OnClick({R.id.edt_startTime, R.id.edt_arrival,
             R.id.edt_departure, R.id.edt_terminal})
@@ -343,10 +359,10 @@ public class MakePlanActivity extends BaseActivity
 
         switch (requestCode) {
             case Constants.CODE_CHOOSE_LOCATION:
-                if(resultCode == RESULT_OK) {
+                if (resultCode == RESULT_OK) {
                     LocationSuggestion suggestion = data.getParcelableExtra("location");
 
-                    if(isDeparture) {
+                    if (isDeparture) {
                         mDepartureEditText.setText(suggestion.getBody());
                         departureSuggestion = suggestion;
                     } else if (isTerminal) {

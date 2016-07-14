@@ -27,12 +27,12 @@ public class BindPresenterImpl implements IBindPresenter {
 
     @Override
     public void bind(String telephone) {
-        Map<String,String> params = new HashMap<>();
-        params.put("type","bind");
+        Map<String, String> params = new HashMap<>();
+        params.put("type", "bind");
         params.put("id", Config.telephone);
         params.put("bindid", telephone);
-        params.put("operation","add");
-        params.put("device_token","");
+        params.put("operation", "add");
+        params.put("device_token", "");
 
         OkHttpUtil.get(params, new StringCallback() {
             @Override
@@ -66,12 +66,12 @@ public class BindPresenterImpl implements IBindPresenter {
 
     @Override
     public void bindConfirm(boolean accept, String telephone) {
-        Map<String,String> params = new HashMap<>();
-        params.put("type","bind");
+        Map<String, String> params = new HashMap<>();
+        params.put("type", "bind");
         params.put("id", Config.telephone);
         params.put("bindid", telephone);
-        params.put("operation","add");
-        params.put("device_token","");
+        params.put("operation", "add");
+        params.put("device_token", "");
 
         OkHttpUtil.get(params, new StringCallback() {
             @Override
@@ -107,10 +107,10 @@ public class BindPresenterImpl implements IBindPresenter {
 
     @Override
     public void getBindList() {
-        Map<String,String> params = new HashMap<>();
-        params.put("type","getBindList");
+        Map<String, String> params = new HashMap<>();
+        params.put("type", "getBindList");
         params.put("id", Config.telephone);
-        params.put("operation","get");
+        params.put("operation", "get");
 
         OkHttpUtil.get(params, new StringCallback() {
             @Override

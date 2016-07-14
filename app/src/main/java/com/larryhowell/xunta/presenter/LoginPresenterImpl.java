@@ -27,13 +27,13 @@ public class LoginPresenterImpl implements ILoginPresenter {
 
     @Override
     public void login(String telephone) {
-        Map<String,String> params = new HashMap<>();
-        params.put("type","getUserInfo");
+        Map<String, String> params = new HashMap<>();
+        params.put("type", "getUserInfo");
         params.put("id", telephone);
-        params.put("operation","get");
-        params.put("name","");
-        params.put("head_img","");
-        params.put("device_token",Config.device_token);
+        params.put("operation", "get");
+        params.put("name", "");
+        params.put("head_img", "");
+        params.put("device_token", Config.device_token);
 
         OkHttpUtil.get(params, new StringCallback() {
             @Override

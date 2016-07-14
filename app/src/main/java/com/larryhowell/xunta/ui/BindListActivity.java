@@ -190,8 +190,7 @@ public class BindListActivity extends AppCompatActivity
                 mTextView.setVisibility(View.VISIBLE);
                 mTextView.setText("请输入11位手机号");
             } else {
-                mProgressDialog.setMessage("正在请求绑定...");
-                mProgressDialog.show();
+                mTextView.setText("正在请求绑定...");
 
                 new BindPresenterImpl(BindListActivity.this).bind(editText.getText().toString());
             }
@@ -204,13 +203,9 @@ public class BindListActivity extends AppCompatActivity
 
     @Override
     public void onBindResult(Boolean result, String info) {
-
-        if (mProgressDialog.isShowing()) {
-            new Handler().postDelayed(() -> mProgressDialog.dismiss(), 500);
-        }
-
         if (result) {
             mDialog.dismiss();
+            refresh();
             UtilBox.showSnackbar(this, "已向对方发出申请");
         } else {
             mTextView.setVisibility(View.VISIBLE);
@@ -256,7 +251,9 @@ public class BindListActivity extends AppCompatActivity
 
     @Override
     public void onBindConfirmResult(Boolean result, String info) {
-        mProgressDialog.dismiss();
+        if (mProgressDialog.isShowing()) {
+            new Handler().postDelayed(() -> mProgressDialog.dismiss(), 500);
+        }
 
         if (result) {
             UtilBox.showSnackbar(this, "已完成");

@@ -28,8 +28,10 @@ import com.larryhowell.xunta.R;
 import com.larryhowell.xunta.common.Config;
 import com.larryhowell.xunta.common.Constants;
 import com.larryhowell.xunta.common.UtilBox;
+import com.larryhowell.xunta.presenter.IPlanPresenter;
 import com.larryhowell.xunta.presenter.IUploadImagePresenter;
 import com.larryhowell.xunta.presenter.IUserInfoPresenter;
+import com.larryhowell.xunta.presenter.PlanPresenterImpl;
 import com.larryhowell.xunta.presenter.UploadImagePresenterImpl;
 import com.larryhowell.xunta.presenter.UserInfoPresenterImpl;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -46,7 +48,8 @@ import butterknife.OnClick;
 import me.drakeet.materialdialog.MaterialDialog;
 
 public class UserInfoActivity extends BaseActivity
-        implements IUploadImagePresenter.IUploadImageView, View.OnClickListener, IUserInfoPresenter.IUserInfoView {
+        implements IUploadImagePresenter.IUploadImageView, View.OnClickListener,
+        IUserInfoPresenter.IUserInfoView, IPlanPresenter.IPlanView {
     @Bind(R.id.toolbar)
     Toolbar toolbar;
 
@@ -67,6 +70,9 @@ public class UserInfoActivity extends BaseActivity
 
     @Bind(R.id.rv_location)
     MaterialRippleLayout mLocationRipple;
+
+    @Bind(R.id.rv_plan)
+    MaterialRippleLayout mPlanRipple;
 
     @Bind(R.id.rv_logout)
     MaterialRippleLayout mLogoutRipple;
@@ -126,10 +132,22 @@ public class UserInfoActivity extends BaseActivity
                 ));
 
         mLocationRipple.setOnClickListener(view ->
-            startActivity(new Intent(this, LocationActivity.class),
-                    ActivityOptions.makeSceneTransitionAnimation(
-                            this, Pair.create(mAppBarLayout, "appBar")).toBundle()
-            ));
+                startActivity(new Intent(this, LocationListActivity.class),
+                        ActivityOptions.makeSceneTransitionAnimation(
+                                this, Pair.create(mAppBarLayout, "appBar")).toBundle()
+                ));
+
+        mPlanRipple.setOnClickListener(view -> {
+            if (mProgressDialog == null) {
+                mProgressDialog = new ProgressDialog(this);
+                mProgressDialog.setCancelable(false);
+            }
+
+            mProgressDialog.setMessage("获取中...");
+            mProgressDialog.show();
+
+            new PlanPresenterImpl(this).getPlan(Config.telephone);
+        });
 
         mLogoutRipple.setOnClickListener(view -> {
             AlertDialog.Builder builder;
@@ -149,6 +167,22 @@ public class UserInfoActivity extends BaseActivity
             dialog.setCanceledOnTouchOutside(true);
             dialog.show();
         });
+    }
+
+    @Override
+    public void onGetPlanResult(Boolean result, String info) {
+        if (mProgressDialog.isShowing()) {
+            new Handler().postDelayed(() -> mProgressDialog.dismiss(), 500);
+        }
+
+        if (result) {
+            startActivity(new Intent(this, PlanDetailActivity.class),
+                    ActivityOptions.makeSceneTransitionAnimation(
+                            this, Pair.create(mAppBarLayout, "appBar")).toBundle()
+            );
+        } else {
+            UtilBox.showSnackbar(this, info);
+        }
     }
 
     @Override
@@ -215,10 +249,10 @@ public class UserInfoActivity extends BaseActivity
                 } else {
                     if (mProgressDialog == null) {
                         mProgressDialog = new ProgressDialog(this);
-                        mProgressDialog.setMessage("修改中...");
                         mProgressDialog.setCancelable(false);
                     }
 
+                    mProgressDialog.setMessage("修改中...");
                     mProgressDialog.show();
 
                     new UserInfoPresenterImpl(this).updateNickname(newNickname);
@@ -319,6 +353,16 @@ public class UserInfoActivity extends BaseActivity
 
     @Override
     public void onGetUserInfoResult(Boolean result, String info) {
+
+    }
+
+    @Override
+    public void onMakePlanResult(Boolean result, String info) {
+
+    }
+
+    @Override
+    public void onCancelPlanResult(Boolean result, String info) {
 
     }
 }

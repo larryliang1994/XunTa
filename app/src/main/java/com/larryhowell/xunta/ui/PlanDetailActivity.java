@@ -2,6 +2,9 @@ package com.larryhowell.xunta.ui;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -41,6 +44,15 @@ public class PlanDetailActivity extends BaseActivity {
     @Bind(R.id.edt_terminal)
     EditText mTerminalEditText;
 
+    @Bind(R.id.textInputLayout)
+    TextInputLayout mTextInputLayout;
+
+    @Bind(R.id.appBar)
+    AppBarLayout mAppBarLayout;
+
+    @Bind(R.id.collapsingToolbarLayout)
+    CollapsingToolbarLayout mCollapsingToolbarLayout;
+
     private Plan mPlan;
 
     @Override
@@ -51,7 +63,6 @@ public class PlanDetailActivity extends BaseActivity {
 
         ButterKnife.bind(this);
 
-        //mPlan = (Plan) getIntent().getSerializableExtra("plan");
         mPlan = Config.plan;
 
         initView();
@@ -64,6 +75,10 @@ public class PlanDetailActivity extends BaseActivity {
         mDescEditText.setHint(mPlan.getDesc());
         mDescEditText.setText(mPlan.getDesc());
         mDescEditText.requestLayout();
+        mTextInputLayout.requestLayout();
+        mToolbar.requestLayout();
+        mAppBarLayout.requestLayout();
+        mCollapsingToolbarLayout.requestLayout();
         mDescEditText.setOnTouchListener((view, motionEvent) -> true);
 
         mStartTimeEditText.setText(UtilBox.getDateToString(Long.valueOf(mPlan.getStartTime()), UtilBox.DATE_TIME));
@@ -75,11 +90,26 @@ public class PlanDetailActivity extends BaseActivity {
         mSeekBar.setOnTouchListener((view, motionEvent) -> true);
 
         switch (mPlan.getGrade()) {
-            case 0: mGradeTextView.setText("D");  mSeekBar.setProgress(4);  break;
-            case 1: mGradeTextView.setText("C");  mSeekBar.setProgress(3);  break;
-            case 2: mGradeTextView.setText("B");  mSeekBar.setProgress(2);  break;
-            case 3: mGradeTextView.setText("A");  mSeekBar.setProgress(1);  break;
-            case 4: mGradeTextView.setText("S");  mSeekBar.setProgress(0);  break;
+            case 0:
+                mGradeTextView.setText("D");
+                mSeekBar.setProgress(4);
+                break;
+            case 1:
+                mGradeTextView.setText("C");
+                mSeekBar.setProgress(3);
+                break;
+            case 2:
+                mGradeTextView.setText("B");
+                mSeekBar.setProgress(2);
+                break;
+            case 3:
+                mGradeTextView.setText("A");
+                mSeekBar.setProgress(1);
+                break;
+            case 4:
+                mGradeTextView.setText("S");
+                mSeekBar.setProgress(0);
+                break;
         }
     }
 

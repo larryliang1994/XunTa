@@ -60,12 +60,12 @@ public class MemberMainActivity extends BaseActivity {
         mTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                if (tab.getPosition() == 0) {
-                    mMapFragment.refresh();
-                } else if (tab.getPosition() == 1) {
+                if (tab.getPosition() == 1 && !mPlanFragment.loaded) {
                     mPlanFragment.refresh();
-                } else {
+                    mPlanFragment.loaded = true;
+                } else if (tab.getPosition() == 2 && !mLocationListFragment.loaded) {
                     mLocationListFragment.refresh();
+                    mLocationListFragment.loaded = true;
                 }
             }
 
@@ -113,7 +113,9 @@ public class MemberMainActivity extends BaseActivity {
         }
 
         @Override
-        public int getCount() { return 3; }
+        public int getCount() {
+            return 3;
+        }
 
         @Override
         public CharSequence getPageTitle(int position) {

@@ -38,13 +38,17 @@ public class OkHttpUtil {
             url += key + "=" + params.get(key) + "&";
         }
 
-        try {
-            String string = new String(url.getBytes(), "UTF-8");
+        Log.i("haha", url);
 
-            OkHttpUtils.get().url(string).build().execute(callback);
-            Log.i("haha", string);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        OkHttpUtils.get().url(url).build().execute(callback);
+
+//        try {
+//            String string = new String(url.getBytes(), "ISO-8859-1");
+//
+//            OkHttpUtils.get().url(string).build().execute(callback);
+//            Log.i("haha", string);
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        }
     }
 }

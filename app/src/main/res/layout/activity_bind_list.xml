@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     android:animateLayoutChanges="true"
+    android:fitsSystemWindows="true"
     tools:context=".ui.BindListActivity">
 
     <android.support.design.widget.AppBarLayout
@@ -40,8 +40,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:visibility="gone"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="gone">
 
                 <ImageView
                     android:layout_width="70dp"
@@ -61,8 +61,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:visibility="gone"
-                android:background="@drawable/round_listview" />
+                android:background="@drawable/round_listview"
+                android:visibility="gone" />
         </FrameLayout>
 
     </android.support.v4.widget.SwipeRefreshLayout>
@@ -71,9 +71,9 @@
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
         android:layout_margin="24dp"
         android:src="@drawable/add"
-        android:layout_gravity="end|bottom"
         android:transitionName="fab" />
 
 </android.support.design.widget.CoordinatorLayout>

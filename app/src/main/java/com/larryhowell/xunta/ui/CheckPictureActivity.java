@@ -67,7 +67,7 @@ public class CheckPictureActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if("local".equals(fromWhere)) {
+        if ("local".equals(fromWhere)) {
             getMenuInflater().inflate(R.menu.menu_check_picture, menu);
         }
 

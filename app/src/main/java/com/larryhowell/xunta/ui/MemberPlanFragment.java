@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,6 +67,7 @@ public class MemberPlanFragment extends Fragment implements IPlanPresenter.IPlan
     FloatingActionButton mFloatingActionButton;
 
     private ProgressDialog mProgressDialog;
+    public boolean loaded = false;
 
     @Nullable
     @Override
@@ -127,7 +129,7 @@ public class MemberPlanFragment extends Fragment implements IPlanPresenter.IPlan
 
         mProgressDialog = new ProgressDialog(getActivity());
         mProgressDialog.setMessage("获取计划中...");
-        mProgressDialog.setCancelable(true);
+        mProgressDialog.setCancelable(false);
     }
 
     public void refresh() {
@@ -160,7 +162,7 @@ public class MemberPlanFragment extends Fragment implements IPlanPresenter.IPlan
                             animation -> {
                                 try {
                                     mTimeTextView.setText(
-                                            UtilBox.dateDifference(Config.plan.getStartTime() + "000", UtilBox.getCurrentTime()));
+                                            UtilBox.dateDifference(Config.plan.getStartTime(), UtilBox.getCurrentTime()));
                                 } catch (ParseException e) {
                                     e.printStackTrace();
                                 }

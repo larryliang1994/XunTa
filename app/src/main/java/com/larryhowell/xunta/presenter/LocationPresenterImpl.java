@@ -1,6 +1,7 @@
 package com.larryhowell.xunta.presenter;
 
 import android.os.Handler;
+import android.util.Log;
 
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.search.core.PoiInfo;
@@ -30,10 +31,10 @@ public class LocationPresenterImpl implements ILocationPresenter {
 
     @Override
     public void getLocation(String telephone) {
-        Map<String,String> params = new HashMap<>();
-        params.put("type","getCurrentLocation");
+        Map<String, String> params = new HashMap<>();
+        params.put("type", "getCurrentLocation");
         params.put("id", Config.telephone);
-        params.put("operation","get");
+        params.put("operation", "get");
 
         OkHttpUtil.get(params, new StringCallback() {
             @Override
@@ -68,73 +69,75 @@ public class LocationPresenterImpl implements ILocationPresenter {
 
     @Override
     public void getLocationList(String telephone) {
-        Map<String,String> params = new HashMap<>();
-        params.put("type","getLocationList");
+        Map<String, String> params = new HashMap<>();
+        params.put("type", "getHistoryLocation");
         params.put("id", telephone);
-        params.put("operation","get");
+        params.put("operation", "get");
 
-//        OkHttpUtil.get(params, new StringCallback() {
-//            @Override
-//            public void onError(Call call, Exception e, int id) {
-//                if (e != null && e.getMessage() != null) {
-//                    Log.i("haha", e.getMessage());
-//                }
-//                iLocationView.onGetLocationListResult(false, "获取位置列表失败", null);
-//            }
-//
-//            @Override
-//            public void onResponse(String response, int id) {
-//                Log.i("haha", response);
-//
-//                try {
-//                    JSONObject jsonObject = new JSONObject(response);
-//
-//                    int result = jsonObject.getInt("result");
-//
-//                    if (result != 1) {
-//                        iLocationView.onGetLocationListResult(false, "获取位置列表失败", null);
-//                    } else {
-//                        JSONArray jsonArray = jsonObject.getJSONArray("locationList");
-//
-//                        List<Location> locationList = new ArrayList<>();
-//
-//                        for (int i = 0; i < jsonArray.length(); i++) {
-//                            JSONObject object = jsonArray.getJSONObject(i);
-//
-//                            PoiInfo poiInfo = new PoiInfo();
-//                            poiInfo.name = object.getString("space");
-//                            poiInfo.location = new LatLng(object.getDouble("lat"), object.getDouble("lot"));
-//
-//                            locationList.add(new Location(poiInfo, object.getString("time")));
-//                        }
-//
-//                        iLocationView.onGetLocationListResult(true, "", locationList);
-//                    }
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
+        OkHttpUtil.get(params, new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id) {
+                if (e != null && e.getMessage() != null) {
+                    Log.i("haha", e.getMessage());
+                }
+                iLocationView.onGetLocationListResult(false, "获取位置列表失败", null);
+            }
 
-        PoiInfo location = new PoiInfo();
-        location.location = new LatLng(30.663791, 104.07281);
-        location.name = "南京市江宁区南京航空航天大学江宁校区";
+            @Override
+            public void onResponse(String response, int id) {
+                Log.i("haha", response);
 
-        List<Location> locationList = new ArrayList<>();
-        locationList.add(new Location(location, "1487654678087"));
-        locationList.add(new Location(location, "1487654678087"));
-        locationList.add(new Location(location, "1487654678087"));
-        locationList.add(new Location(location, "1487654678087"));
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
 
-        new Handler().postDelayed(() -> iLocationView.onGetLocationListResult(true, "", locationList), 2000);
+                    int result = jsonObject.getInt("result");
+
+                    if (result == -2) {
+                        iLocationView.onGetLocationListResult(false, "还没有上传过位置信息", null);
+                    } else if (result != 1) {
+                        iLocationView.onGetLocationListResult(false, "获取位置列表失败", null);
+                    } else {
+                        JSONArray jsonArray = jsonObject.getJSONArray("locationList");
+
+                        List<Location> locationList = new ArrayList<>();
+
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            JSONObject object = jsonArray.getJSONObject(i);
+
+                            PoiInfo poiInfo = new PoiInfo();
+                            poiInfo.name = object.getString("space");
+                            poiInfo.location = new LatLng(object.getDouble("lat"), object.getDouble("lot"));
+
+                            locationList.add(new Location(poiInfo, object.getString("time")));
+                        }
+
+                        iLocationView.onGetLocationListResult(true, "", locationList);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+//        PoiInfo location = new PoiInfo();
+//        location.location = new LatLng(30.663791, 104.07281);
+//        location.name = "南京市江宁区南京航空航天大学江宁校区";
+//
+//        List<Location> locationList = new ArrayList<>();
+//        locationList.add(new Location(location, "1487654678087"));
+//        locationList.add(new Location(location, "1487654678087"));
+//        locationList.add(new Location(location, "1487654678087"));
+//        locationList.add(new Location(location, "1487654678087"));
+//
+//        new Handler().postDelayed(() -> iLocationView.onGetLocationListResult(true, "", locationList), 2000);
     }
 
     @Override
     public void sendLocation(PoiInfo location) {
-        Map<String,String> params = new HashMap<>();
-        params.put("type","sendLocation");
+        Map<String, String> params = new HashMap<>();
+        params.put("type", "sendLocation");
         params.put("id", Config.telephone);
-        params.put("operation","add");
+        params.put("operation", "add");
         params.put("space", location.name);
         params.put("lat", String.valueOf(location.location.latitude));
         params.put("lot", String.valueOf(location.location.longitude));
@@ -142,10 +145,12 @@ public class LocationPresenterImpl implements ILocationPresenter {
 
         OkHttpUtil.get(params, new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {}
+            public void onError(Call call, Exception e, int id) {
+            }
 
             @Override
-            public void onResponse(String response, int id) {}
+            public void onResponse(String response, int id) {
+            }
         });
     }
 }

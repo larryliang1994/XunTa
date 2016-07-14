@@ -4,6 +4,7 @@
     android:id="@+id/swipeRefreshLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -14,9 +15,10 @@
             android:id="@+id/ll_empty"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginBottom="50dp"
             android:gravity="center"
-            android:visibility="gone"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:visibility="gone">
 
             <ImageView
                 android:layout_width="70dp"
@@ -35,9 +37,9 @@
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="gone"
             android:layout_margin="10dp"
-            android:background="@drawable/round_listview" />
+            android:background="@drawable/round_listview"
+            android:visibility="gone" />
 
     </FrameLayout>
 

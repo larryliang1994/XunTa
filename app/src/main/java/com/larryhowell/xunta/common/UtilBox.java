@@ -15,6 +15,7 @@ import android.os.Environment;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;

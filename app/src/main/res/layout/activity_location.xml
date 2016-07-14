@@ -38,8 +38,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:visibility="gone"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="gone">
 
                 <ImageView
                     android:layout_width="70dp"
@@ -50,7 +50,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="你还没有上传过位置信息"
+                    android:text="开启定位即可分享位置信息"
                     android:textSize="20sp" />
             </LinearLayout>
 
@@ -58,9 +58,9 @@
                 android:id="@+id/recyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="gone"
                 android:layout_margin="10dp"
-                android:background="@drawable/round_listview" />
+                android:background="@drawable/round_listview"
+                android:visibility="gone" />
 
         </FrameLayout>
 

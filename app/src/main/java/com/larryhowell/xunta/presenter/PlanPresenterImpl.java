@@ -80,9 +80,8 @@ public class PlanPresenterImpl implements IPlanPresenter {
         Map<String, String> params = new HashMap<>();
 
         params.put("type", "cancelPlan");
-        params.put("id", Config.telephone);
-        params.put("bindid", telephone);
-        params.put("operation", "update");
+        params.put("id", telephone);
+        params.put("operation", "delete");
 
         OkHttpUtil.get(params, new StringCallback() {
             @Override
@@ -129,14 +128,20 @@ public class PlanPresenterImpl implements IPlanPresenter {
             @Override
             public void onResponse(String response, int id) {
                 try {
+                    Log.i("haha", response);
+
                     JSONObject jsonObject = new JSONObject(response);
 
                     int result = jsonObject.getInt("result");
 
-                    if (result != 1) {
+                    if (result == -2) {
+                        iPlanView.onGetPlanResult(false, "没有正在运行的出行计划");
+                    } else if (result != 1) {
                         iPlanView.onGetPlanResult(false, "获取计划失败");
                     } else {
-                        JSONObject object =jsonObject.getJSONObject("planInfo");
+                        JSONObject object = jsonObject.getJSONObject("planInfo");
+
+                        Config.plan = null;
 
                         PoiInfo departure = new PoiInfo();
                         departure.name = object.getString("space_start");

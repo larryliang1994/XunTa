@@ -27,7 +27,7 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class LocationActivity extends BaseActivity implements ILocationPresenter.ILocationView {
+public class LocationListActivity extends BaseActivity implements ILocationPresenter.ILocationView {
     @Bind(R.id.toolbar)
     Toolbar mToolbar;
 

@@ -1,6 +1,7 @@
 package com.larryhowell.xunta.ui;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -8,16 +9,20 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Pair;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -56,6 +61,7 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
+import me.drakeet.materialdialog.MaterialDialog;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener, BDLocationListener,
@@ -86,6 +92,9 @@ public class MainActivity extends BaseActivity
     private TextView mNicknameTextView;
     private int versionCode = 2;
     private boolean isFirstLoc = true;
+
+    private MaterialDialog mDialog;
+    private TextView mTextView;
 
     public LocationClient mLocationClient = null;
 
@@ -168,6 +177,61 @@ public class MainActivity extends BaseActivity
         dialog.setCancelable(true);
         dialog.setCanceledOnTouchOutside(true);
         dialog.show();
+    }
+
+    @SuppressLint("InflateParams")
+    private void showShareLocationDialog() {
+        final View contentView = getLayoutInflater().inflate(R.layout.dialog_input, null);
+
+        TextInputLayout til = (TextInputLayout) contentView.findViewById(R.id.til_input);
+        til.setHint("对方手机号");
+
+        mTextView = (TextView) contentView.findViewById(R.id.tv_input);
+
+        final EditText editText = ((EditText) contentView
+                .findViewById(R.id.edt_input));
+        editText.setInputType(EditorInfo.TYPE_CLASS_PHONE);
+        editText.requestFocus();
+
+        mDialog = new MaterialDialog(this);
+        mDialog.setPositiveButton("查找", v -> {
+            if (TextUtils.isEmpty(editText.getText())) {
+                mTextView.setVisibility(View.VISIBLE);
+                mTextView.setText("请输入对方手机号");
+            } else if (!Config.isConnected) {
+                Toast.makeText(this, R.string.cant_access_network,
+                        Toast.LENGTH_SHORT).show();
+            } else if (!UtilBox.isTelephoneNumber(editText.getText().toString())) {
+                mTextView.setVisibility(View.VISIBLE);
+                mTextView.setText("请输入11位手机号");
+            } else {
+                mTextView.setText("查找中...");
+
+                new LocationPresenterImpl(this).getLocation(editText.getText().toString());
+            }
+        }).setNegativeButton("取消", v -> {
+            mDialog.dismiss();
+        }).setContentView(contentView)
+                .setCanceledOnTouchOutside(true)
+                .show();
+    }
+
+    @Override
+    public void onGetLocationResult(Boolean result, PoiInfo location) {
+        if (result) {
+            mDialog.dismiss();
+
+            Intent intent = new Intent(this, MapActivity.class);
+            intent.putExtra("location", location);
+            startActivity(intent,
+                    ActivityOptions.makeSceneTransitionAnimation(
+                            MainActivity.this,
+                            Pair.create(mAppBarLayout, "appBar")
+                    ).toBundle());
+        } else {
+            mTextView.setVisibility(View.VISIBLE);
+            mTextView.setText("获取对方位置失败");
+        }
     }
 
     private void initLocation() {
@@ -307,10 +371,7 @@ public class MainActivity extends BaseActivity
         if (mDrawer.isDrawerOpen(GravityCompat.START)) {
             mDrawer.closeDrawer(GravityCompat.START);
         } else {
-            Intent i = new Intent(Intent.ACTION_MAIN);
-            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            i.addCategory(Intent.CATEGORY_HOME);
-            startActivity(i);
+            super.onBackPressed();
         }
     }
 
@@ -346,12 +407,14 @@ public class MainActivity extends BaseActivity
                 break;
 
             case R.id.nav_bind_list:
-                startActivity(
-                        new Intent(MainActivity.this, BindListActivity.class)
-                        , ActivityOptions.makeSceneTransitionAnimation(
+                startActivity(new Intent(MainActivity.this, BindListActivity.class),
+                        ActivityOptions.makeSceneTransitionAnimation(
                                 MainActivity.this,
-                                Pair.create(mAppBarLayout, "appBar")
-                        ).toBundle());
+                                Pair.create(mAppBarLayout, "appBar")).toBundle());
+                break;
+
+            case R.id.nav_share_location:
+                showShareLocationDialog();
                 break;
 
             case R.id.nav_share:
@@ -442,10 +505,6 @@ public class MainActivity extends BaseActivity
         super.onStop();
 
         mMapView.setVisibility(View.GONE);
-    }
-
-    @Override
-    public void onGetLocationResult(Boolean result, PoiInfo location) {
     }
 
     @Override

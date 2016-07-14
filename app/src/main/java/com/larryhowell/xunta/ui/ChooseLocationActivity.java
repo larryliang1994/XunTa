@@ -67,7 +67,7 @@ public class ChooseLocationActivity extends BaseActivity implements OnGetPoiSear
         mSearchView.setOnSearchListener(new FloatingSearchView.OnSearchListener() {
             @Override
             public void onSuggestionClicked(SearchSuggestion searchSuggestion) {
-                LocationSuggestion suggestion = (LocationSuggestion)searchSuggestion;
+                LocationSuggestion suggestion = (LocationSuggestion) searchSuggestion;
                 Intent intent = new Intent();
                 intent.putExtra("location", suggestion);
                 setResult(RESULT_OK, intent);
@@ -75,7 +75,8 @@ public class ChooseLocationActivity extends BaseActivity implements OnGetPoiSear
             }
 
             @Override
-            public void onSearchAction(String query) {}
+            public void onSearchAction(String query) {
+            }
         });
 
         mSearchView.setOnBindSuggestionCallback(
@@ -101,7 +102,7 @@ public class ChooseLocationActivity extends BaseActivity implements OnGetPoiSear
                             .replaceFirst(mSearchView.getQuery(),
                                     "<font color=\"" + textLight + "\">" + mSearchView.getQuery() + "</font>");
                     textView.setText(Html.fromHtml(text));
-        });
+                });
 
         mSearchView.setOnFocusChangeListener(new FloatingSearchView.OnFocusChangeListener() {
             @Override

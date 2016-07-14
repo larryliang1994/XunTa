@@ -22,7 +22,7 @@ public class BindListAdapter extends RecyclerView.Adapter implements View.OnClic
     private OnRecyclerViewItemClickListener mOnItemClickListener = null;
     private Context mContext;
 
-    public BindListAdapter(Context context){
+    public BindListAdapter(Context context) {
         this.mContext = context;
 
     }
@@ -50,7 +50,7 @@ public class BindListAdapter extends RecyclerView.Adapter implements View.OnClic
                 UtilBox.getThumbnailImageName(person.getPortraitUrl(),
                         UtilBox.dip2px(mContext, 45),
                         UtilBox.dip2px(mContext, 45))
-                        , holder.portraitImageView);
+                , holder.portraitImageView);
 
         holder.bodyRippleViewLayout.setOnClickListener(view -> {
             if (mOnItemClickListener != null) {
@@ -73,9 +73,12 @@ public class BindListAdapter extends RecyclerView.Adapter implements View.OnClic
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        @Bind(R.id.iv_item_body_member) ImageView portraitImageView;
-        @Bind(R.id.rl_item_body_member) MaterialRippleLayout bodyRippleViewLayout;
-        @Bind(R.id.tv_nickname) TextView nicknameTextView;
+        @Bind(R.id.iv_item_body_member)
+        ImageView portraitImageView;
+        @Bind(R.id.rl_item_body_member)
+        MaterialRippleLayout bodyRippleViewLayout;
+        @Bind(R.id.tv_nickname)
+        TextView nicknameTextView;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -87,6 +90,6 @@ public class BindListAdapter extends RecyclerView.Adapter implements View.OnClic
 
     //define interface
     public interface OnRecyclerViewItemClickListener {
-        void onItemClick(View view , Person person);
+        void onItemClick(View view, Person person);
     }
 }
