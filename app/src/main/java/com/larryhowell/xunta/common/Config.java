@@ -23,5 +23,7 @@ public class Config {
 
     public static String device_token = "";
 
-    public static String message = "";
+    public static String bindMessage = "";
+    public static String confirmMessage = "";
+    public static String locationMessage = "";
 }

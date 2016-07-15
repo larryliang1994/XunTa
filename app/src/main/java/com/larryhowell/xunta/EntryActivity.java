@@ -1,25 +1,20 @@
 package com.larryhowell.xunta;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
 import com.baidu.mapapi.SDKInitializer;
-import com.igexin.sdk.PushManager;
 import com.larryhowell.xunta.common.Config;
 import com.larryhowell.xunta.common.Constants;
 import com.larryhowell.xunta.common.UtilBox;
@@ -41,6 +36,7 @@ import com.umeng.analytics.MobclickAgent;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cn.jpush.android.api.JPushInterface;
 
 public class EntryActivity extends Activity implements IUserInfoPresenter.IUserInfoView {
     @Bind(R.id.ll_no_network)
@@ -173,21 +169,10 @@ public class EntryActivity extends Activity implements IUserInfoPresenter.IUserI
     }
 
     private void initPushManager() {
-        PackageManager pkgManager = getPackageManager();
-        // 读写 sd card 权限非常重要, android6.0默认禁止的, 建议初始化之前就弹窗让用户赋予该权限
-        boolean sdCardWritePermission =
-                pkgManager.checkPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE, getPackageName()) == PackageManager.PERMISSION_GRANTED;
+        JPushInterface.setDebugMode(true);
+        JPushInterface.init(getApplicationContext());
 
-        // read phone state用于获取 imei 设备信息
-        boolean phoneSatePermission =
-                pkgManager.checkPermission(android.Manifest.permission.READ_PHONE_STATE, getPackageName()) == PackageManager.PERMISSION_GRANTED;
-
-        if (Build.VERSION.SDK_INT >= 23 && !sdCardWritePermission || !phoneSatePermission) {
-            ActivityCompat.requestPermissions(this, new String[] {android.Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_PHONE_STATE},
-                    0);
-        } else {
-            PushManager.getInstance().initialize(this.getApplicationContext());
-        }
+        Config.device_token = JPushInterface.getRegistrationID(getApplicationContext());
     }
 
     private void getNetworkState() {
@@ -221,15 +206,6 @@ public class EntryActivity extends Activity implements IUserInfoPresenter.IUserI
                 .tasksProcessingOrder(QueueProcessingType.FIFO).build();
         L.writeLogs(false);
         ImageLoader.getInstance().init(config);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == 0) {
-            PushManager.getInstance().initialize(this.getApplicationContext());
-        } else {
-            onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
     }
 
     @Override

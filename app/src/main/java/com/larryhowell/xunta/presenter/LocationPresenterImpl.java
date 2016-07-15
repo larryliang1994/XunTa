@@ -1,6 +1,5 @@
 package com.larryhowell.xunta.presenter;
 
-import android.os.Handler;
 import android.util.Log;
 
 import com.baidu.mapapi.model.LatLng;
@@ -33,7 +32,7 @@ public class LocationPresenterImpl implements ILocationPresenter {
     public void getLocation(String telephone) {
         Map<String, String> params = new HashMap<>();
         params.put("type", "getCurrentLocation");
-        params.put("id", Config.telephone);
+        params.put("id", telephone);
         params.put("operation", "get");
 
         OkHttpUtil.get(params, new StringCallback() {
@@ -44,6 +43,8 @@ public class LocationPresenterImpl implements ILocationPresenter {
             @Override
             public void onResponse(String response, int id) {
                 try {
+                    Log.i("haha", response);
+
                     JSONObject jsonObject = new JSONObject(response);
 
                     int result = jsonObject.getInt("result");
@@ -108,7 +109,7 @@ public class LocationPresenterImpl implements ILocationPresenter {
                             poiInfo.name = object.getString("space");
                             poiInfo.location = new LatLng(object.getDouble("lat"), object.getDouble("lot"));
 
-                            locationList.add(new Location(poiInfo, object.getString("time")));
+                            locationList.add(0, new Location(poiInfo, object.getString("time")));
                         }
 
                         iLocationView.onGetLocationListResult(true, "", locationList);

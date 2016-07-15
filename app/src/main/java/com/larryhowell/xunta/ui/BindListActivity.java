@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
@@ -16,10 +17,14 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +36,7 @@ import com.larryhowell.xunta.common.UtilBox;
 import com.larryhowell.xunta.presenter.BindPresenterImpl;
 import com.larryhowell.xunta.presenter.IBindPresenter;
 import com.larryhowell.xunta.widget.DividerItemDecoration;
+import com.malinskiy.superrecyclerview.SuperRecyclerView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,16 +52,10 @@ public class BindListActivity extends AppCompatActivity
     Toolbar mToolbar;
 
     @Bind(R.id.recyclerView)
-    RecyclerView mRecyclerView;
-
-    @Bind(R.id.swipeRefreshLayout)
-    SwipeRefreshLayout mSwipeRefreshLayout;
+    SuperRecyclerView mRecyclerView;
 
     @Bind(R.id.appBar)
     AppBarLayout mAppBarLayout;
-
-    @Bind(R.id.ll_empty)
-    LinearLayout mEmptyLinearLayout;
 
     private BindListAdapter mAdapter;
     private ProgressDialog mProgressDialog;
@@ -75,23 +75,20 @@ public class BindListActivity extends AppCompatActivity
 
     private void initView() {
         setSupportActionBar(mToolbar);
-
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        mSwipeRefreshLayout.setOnRefreshListener(this::refresh);
-        mSwipeRefreshLayout.setEnabled(true);
-
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, null));
 
         mProgressDialog = new ProgressDialog(this);
         mProgressDialog.setMessage("绑定中...");
         mProgressDialog.setCancelable(false);
 
+        mRecyclerView.setRefreshListener(this::refresh);
+
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, null));
+
         // 延迟执行才能使旋转进度条显示出来
         new Handler().postDelayed(() -> {
-            mSwipeRefreshLayout.setRefreshing(true);
+            mRecyclerView.setRefreshing(true);
             refresh();
         }, 200);
     }
@@ -111,46 +108,43 @@ public class BindListActivity extends AppCompatActivity
         if (!Config.isConnected) {
             UtilBox.showSnackbar(this, R.string.cant_access_network);
 
-            mSwipeRefreshLayout.setRefreshing(false);
+            mRecyclerView.setRefreshing(false);
             return;
         }
 
-        mSwipeRefreshLayout.setRefreshing(true);
+        mRecyclerView.setRefreshing(true);
 
         new BindPresenterImpl(this).getBindList();
     }
 
     @Override
     public void OnGetBindListResult(Boolean result, String info) {
-        mSwipeRefreshLayout.setRefreshing(false);
+        mRecyclerView.setRefreshing(false);
 
         if (result) {
-            if (Config.bindList.size() == 0) {
-                mEmptyLinearLayout.setVisibility(View.VISIBLE);
-                mRecyclerView.setVisibility(View.GONE);
-            } else {
-                mEmptyLinearLayout.setVisibility(View.GONE);
-                mRecyclerView.setVisibility(View.VISIBLE);
-                if (mAdapter == null) {
-                    mAdapter = new BindListAdapter(this);
+            if (mAdapter == null) {
+                mAdapter = new BindListAdapter(this);
 
-                    mAdapter.setOnItemClickListener((view, person) -> {
-                        Intent intent = new Intent(BindListActivity.this, MemberMainActivity.class);
-                        intent.putExtra("person", person);
-                        startActivity(intent,
-                                ActivityOptions.makeSceneTransitionAnimation(
-                                        BindListActivity.this,
-                                        mAppBarLayout, "appBar").toBundle());
-                    });
+                mAdapter.setOnItemClickListener((view, person) -> {
+                    Intent intent = new Intent(BindListActivity.this, MemberMainActivity.class);
+                    intent.putExtra("person", person);
+                    startActivity(intent,
+                            ActivityOptions.makeSceneTransitionAnimation(
+                                    BindListActivity.this,
+                                    mAppBarLayout, "appBar").toBundle());
+                });
 
-                    mRecyclerView.setAdapter(mAdapter);
-                } else {
-                    mAdapter.notifyDataSetChanged();
+                if (Config.bindList != null && Config.bindList.size() != 0) {
+                    CoordinatorLayout.LayoutParams layoutParams = (CoordinatorLayout.LayoutParams) mRecyclerView.getLayoutParams();
+                    layoutParams.height = Config.bindList.size() * (UtilBox.dip2px(this, 72) + 1) + 10;
+                    mRecyclerView.setLayoutParams(layoutParams);
                 }
+
+                mRecyclerView.setAdapter(mAdapter);
+            } else {
+                mAdapter.notifyDataSetChanged();
             }
         } else {
-            mEmptyLinearLayout.setVisibility(View.VISIBLE);
-            mRecyclerView.setVisibility(View.GONE);
             UtilBox.showSnackbar(this, info);
         }
     }
@@ -190,6 +184,7 @@ public class BindListActivity extends AppCompatActivity
                 mTextView.setVisibility(View.VISIBLE);
                 mTextView.setText("请输入11位手机号");
             } else {
+                mTextView.setVisibility(View.VISIBLE);
                 mTextView.setText("正在请求绑定...");
 
                 new BindPresenterImpl(BindListActivity.this).bind(editText.getText().toString());
@@ -204,9 +199,13 @@ public class BindListActivity extends AppCompatActivity
     @Override
     public void onBindResult(Boolean result, String info) {
         if (result) {
-            mDialog.dismiss();
+            if (mDialog != null) {
+                mDialog.dismiss();
+                mDialog = null;
+                UtilBox.showSnackbar(this, "已向对方发出申请");
+            }
+
             refresh();
-            UtilBox.showSnackbar(this, "已向对方发出申请");
         } else {
             mTextView.setVisibility(View.VISIBLE);
             mTextView.setText(info);
@@ -217,9 +216,9 @@ public class BindListActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
 
-        if (Config.message != null && !"".equals(Config.message)) {
+        if (Config.bindMessage != null && !"".equals(Config.bindMessage)) {
             try {
-                JSONObject jsonObject = new JSONObject(Config.message);
+                JSONObject jsonObject = new JSONObject(Config.bindMessage);
 
                 String nickname = jsonObject.getString("name");
                 String telephone = jsonObject.getString("telephone");
@@ -242,7 +241,7 @@ public class BindListActivity extends AppCompatActivity
                         })
                         .show();
 
-                Config.message = "";
+                Config.bindMessage = "";
             } catch (JSONException e) {
                 e.printStackTrace();
             }

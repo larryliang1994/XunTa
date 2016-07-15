@@ -81,3 +81,13 @@
 -keep class org.apache.commons.logging.** { *; }
 -keep class android.net.compatibility.** { *; }
 -keep class android.net.http.** { *; }
+
+#==================gson==========================
+-dontwarn com.google.**
+-keep class com.google.gson.** {*;}
+
+#==================protobuf======================
+-dontwarn com.google.**
+-keep class com.google.protobuf.** {*;}
+
+-dontwarn com.malinskiy.superrecyclerview.SwipeDismissRecyclerViewTouchListener*

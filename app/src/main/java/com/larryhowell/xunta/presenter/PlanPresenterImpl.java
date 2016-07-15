@@ -115,8 +115,7 @@ public class PlanPresenterImpl implements IPlanPresenter {
         Map<String, String> params = new HashMap<>();
 
         params.put("type", "getPlan");
-        params.put("id", Config.telephone);
-        params.put("bindid", telephone);
+        params.put("id", telephone);
         params.put("operation", "get");
 
         OkHttpUtil.get(params, new StringCallback() {

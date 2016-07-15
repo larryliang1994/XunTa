@@ -12,7 +12,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.baidu.mapapi.search.core.PoiInfo;
 import com.larryhowell.xunta.R;
@@ -23,6 +25,7 @@ import com.larryhowell.xunta.common.UtilBox;
 import com.larryhowell.xunta.presenter.ILocationPresenter;
 import com.larryhowell.xunta.presenter.LocationPresenterImpl;
 import com.larryhowell.xunta.widget.DividerItemDecoration;
+import com.malinskiy.superrecyclerview.SuperRecyclerView;
 
 import java.util.List;
 
@@ -31,13 +34,7 @@ import butterknife.ButterKnife;
 
 public class MemberLocationListFragment extends Fragment implements ILocationPresenter.ILocationView {
     @Bind(R.id.recyclerView)
-    RecyclerView mRecyclerView;
-
-    @Bind(R.id.swipeRefreshLayout)
-    SwipeRefreshLayout mSwipeRefreshLayout;
-
-    @Bind(R.id.ll_empty)
-    LinearLayout mEmptyLinearLayout;
+    SuperRecyclerView mRecyclerView;
 
     private LocationListAdapter mAdapter;
     public boolean loaded = false;
@@ -55,11 +52,12 @@ public class MemberLocationListFragment extends Fragment implements ILocationPre
     }
 
     private void initView() {
-        mSwipeRefreshLayout.setOnRefreshListener(this::refresh);
-        mSwipeRefreshLayout.setEnabled(true);
+        mRecyclerView.setRefreshListener(this::refresh);
+
+        ((ImageView) mRecyclerView.getEmptyView().findViewById(R.id.imageView)).setImageResource(R.drawable.no_location);
+        ((TextView) mRecyclerView.getEmptyView().findViewById(R.id.textView)).setText("ta还没有上传过位置信息");
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), null));
     }
 
@@ -67,44 +65,37 @@ public class MemberLocationListFragment extends Fragment implements ILocationPre
         if (!Config.isConnected) {
             UtilBox.showSnackbar(getActivity(), R.string.cant_access_network);
 
-            mSwipeRefreshLayout.setRefreshing(false);
+            mRecyclerView.setRefreshing(false);
             return;
         }
 
-        mSwipeRefreshLayout.setRefreshing(true);
+        mRecyclerView.setRefreshing(true);
 
         new LocationPresenterImpl(this).getLocationList(((MemberMainActivity) getActivity()).mPerson.getTelephone());
     }
 
     @Override
     public void onGetLocationListResult(Boolean result, String info, List<Location> locationList) {
-        mSwipeRefreshLayout.setRefreshing(false);
+        mRecyclerView.setRefreshing(false);
 
         if (result) {
-            if (locationList.size() == 0) {
-                mEmptyLinearLayout.setVisibility(View.VISIBLE);
-                mRecyclerView.setVisibility(View.GONE);
-            } else {
-                mEmptyLinearLayout.setVisibility(View.GONE);
-                mRecyclerView.setVisibility(View.VISIBLE);
+            if (mAdapter == null) {
+                mAdapter = new LocationListAdapter();
+                mAdapter.setLocationList(locationList);
 
-                if (mAdapter == null) {
-                    mAdapter = new LocationListAdapter();
-                    mAdapter.setLocationList(locationList);
-
-                    FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mRecyclerView.getLayoutParams();
-                    layoutParams.height = locationList.size() * (UtilBox.dip2px(getActivity(), 64) + 1);
+                if (locationList != null && locationList.size() != 0) {
+                    ViewGroup.LayoutParams layoutParams = mRecyclerView.getLayoutParams();
+                    layoutParams.height = locationList.size() * (UtilBox.dip2px(getActivity(), 64) + 1) + 20;
                     mRecyclerView.setLayoutParams(layoutParams);
-
-                    mRecyclerView.setAdapter(mAdapter);
-                } else {
-                    mAdapter.setLocationList(locationList);
-                    mAdapter.notifyDataSetChanged();
                 }
+
+                mRecyclerView.setAdapter(mAdapter);
+            } else {
+                mAdapter.setLocationList(locationList);
+                mAdapter.notifyDataSetChanged();
             }
+
         } else {
-            mEmptyLinearLayout.setVisibility(View.VISIBLE);
-            mRecyclerView.setVisibility(View.GONE);
             UtilBox.showSnackbar(getActivity(), info);
         }
     }

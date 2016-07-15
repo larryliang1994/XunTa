@@ -3,10 +3,13 @@ package com.larryhowell.xunta.ui;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TextInputLayout;
@@ -50,11 +53,16 @@ import com.larryhowell.xunta.common.Config;
 import com.larryhowell.xunta.common.Constants;
 import com.larryhowell.xunta.common.UtilBox;
 import com.larryhowell.xunta.presenter.ILocationPresenter;
+import com.larryhowell.xunta.presenter.IShareLocationPresenter;
 import com.larryhowell.xunta.presenter.IUpdatePresenter;
 import com.larryhowell.xunta.presenter.LocationPresenterImpl;
+import com.larryhowell.xunta.presenter.ShareLocationPresenterImpl;
 import com.larryhowell.xunta.presenter.UpdatePresenterImpl;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.umeng.analytics.MobclickAgent;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -65,7 +73,8 @@ import me.drakeet.materialdialog.MaterialDialog;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener, BDLocationListener,
-        View.OnClickListener, IUpdatePresenter.IUpdateView, ILocationPresenter.ILocationView {
+        View.OnClickListener, IUpdatePresenter.IUpdateView, ILocationPresenter.ILocationView,
+        IShareLocationPresenter.IShareLocationView {
 
     @Bind(R.id.mapView)
     MapView mMapView;
@@ -97,6 +106,7 @@ public class MainActivity extends BaseActivity
     private TextView mTextView;
 
     public LocationClient mLocationClient = null;
+    private ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,6 +134,10 @@ public class MainActivity extends BaseActivity
 
         mMapView.showZoomControls(false);
         mMapView.showScaleControl(false);
+
+        mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setMessage("请稍候...");
+        mProgressDialog.setCancelable(false);
 
         mRippleLayout.setOnClickListener(v -> {
             if (Config.telephone == null || "".equals(Config.telephone)) {
@@ -207,7 +221,7 @@ public class MainActivity extends BaseActivity
             } else {
                 mTextView.setText("查找中...");
 
-                new LocationPresenterImpl(this).getLocation(editText.getText().toString());
+                new ShareLocationPresenterImpl(this).requestLocation(editText.getText().toString());
             }
         }).setNegativeButton("取消", v -> {
             mDialog.dismiss();
@@ -217,20 +231,14 @@ public class MainActivity extends BaseActivity
     }
 
     @Override
-    public void onGetLocationResult(Boolean result, PoiInfo location) {
+    public void requestLocationResult(Boolean result, String info) {
         if (result) {
             mDialog.dismiss();
 
-            Intent intent = new Intent(this, MapActivity.class);
-            intent.putExtra("location", location);
-            startActivity(intent,
-                    ActivityOptions.makeSceneTransitionAnimation(
-                            MainActivity.this,
-                            Pair.create(mAppBarLayout, "appBar")
-                    ).toBundle());
+            UtilBox.showSnackbar(this, "请求成功,正在等待对方确认");
         } else {
             mTextView.setVisibility(View.VISIBLE);
-            mTextView.setText("获取对方位置失败");
+            mTextView.setText(info);
         }
     }
 
@@ -490,6 +498,84 @@ public class MainActivity extends BaseActivity
         mLocationClient.start();
 
         MobclickAgent.onResume(this);
+
+        if (Config.confirmMessage != null && !"".equals(Config.confirmMessage)) {
+            try {
+                JSONObject jsonObject = new JSONObject(Config.confirmMessage);
+
+                String nickname = jsonObject.getString("name");
+                String telephone = jsonObject.getString("telephone");
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_NoActionBar_MinWidth);
+
+                builder.setMessage("用户 " + nickname + " (手机号" + telephone + ")想查看你的位置")
+                        .setCancelable(false)
+                        .setPositiveButton("同意", (dialog, which) -> {
+                            mProgressDialog.show();
+
+                            new ShareLocationPresenterImpl(this).confirmShare(true, nickname, telephone);
+                        })
+                        .setNegativeButton("拒绝", (dialog, which) -> {
+                            mProgressDialog.show();
+
+                            new ShareLocationPresenterImpl(this).confirmShare(false, nickname, telephone);
+                        })
+                        .show();
+
+                Config.confirmMessage = "";
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } else if (Config.locationMessage != null && !"".equals(Config.locationMessage)) {
+            try {
+                JSONObject jsonObject = new JSONObject(Config.locationMessage);
+
+                String nickname = jsonObject.getString("name");
+                String telephone = jsonObject.getString("telephone");
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_NoActionBar_MinWidth);
+
+                builder.setMessage("用户 " + nickname + " (手机号" + telephone + ")已经同意与你共享位置")
+                        .setCancelable(false)
+                        .setPositiveButton("现在去看", (dialog, which) -> {
+                            Intent intent = new Intent(this, MapActivity.class);
+                            intent.putExtra("location", decodeLocation(Config.locationMessage));
+                            startActivity(intent,
+                                    ActivityOptions.makeSceneTransitionAnimation(
+                                            MainActivity.this,
+                                            Pair.create(mAppBarLayout, "appBar")
+                                    ).toBundle());
+                            Config.locationMessage = "";
+                        })
+                        .setNegativeButton("不看了", (dialogInterface, i) -> {
+                            Config.locationMessage = "";
+                        })
+                        .show();
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void confirmShareResult(Boolean result, String info) {
+        if (mProgressDialog.isShowing()) {
+            new Handler().postDelayed(() -> mProgressDialog.dismiss(), 500);
+        }
+    }
+
+    private PoiInfo decodeLocation(String message) {
+        PoiInfo location = new PoiInfo();
+        try {
+            JSONObject object = new JSONObject(message);
+            location.location = new LatLng(object.getDouble("lat"), object.getDouble("lot"));
+            location.name = object.getString("space");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return location;
     }
 
     @Override
@@ -505,6 +591,10 @@ public class MainActivity extends BaseActivity
         super.onStop();
 
         mMapView.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onGetLocationResult(Boolean result, PoiInfo location) {
     }
 
     @Override

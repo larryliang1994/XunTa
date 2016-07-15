@@ -2,6 +2,7 @@ package com.larryhowell.xunta.ui;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,7 +11,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.baidu.mapapi.search.core.PoiInfo;
 import com.larryhowell.xunta.R;
@@ -21,6 +24,7 @@ import com.larryhowell.xunta.common.UtilBox;
 import com.larryhowell.xunta.presenter.ILocationPresenter;
 import com.larryhowell.xunta.presenter.LocationPresenterImpl;
 import com.larryhowell.xunta.widget.DividerItemDecoration;
+import com.malinskiy.superrecyclerview.SuperRecyclerView;
 
 import java.util.List;
 
@@ -32,13 +36,7 @@ public class LocationListActivity extends BaseActivity implements ILocationPrese
     Toolbar mToolbar;
 
     @Bind(R.id.recyclerView)
-    RecyclerView mRecyclerView;
-
-    @Bind(R.id.swipeRefreshLayout)
-    SwipeRefreshLayout mSwipeRefreshLayout;
-
-    @Bind(R.id.ll_empty)
-    LinearLayout mEmptyLinearLayout;
+    SuperRecyclerView mRecyclerView;
 
     private LocationListAdapter mAdapter;
 
@@ -58,16 +56,17 @@ public class LocationListActivity extends BaseActivity implements ILocationPrese
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mSwipeRefreshLayout.setOnRefreshListener(this::refresh);
-        mSwipeRefreshLayout.setEnabled(true);
+        mRecyclerView.setRefreshListener(this::refresh);
+
+        ((ImageView) mRecyclerView.getEmptyView().findViewById(R.id.imageView)).setImageResource(R.drawable.no_location);
+        ((TextView) mRecyclerView.getEmptyView().findViewById(R.id.textView)).setText("开启定位即可上传位置信息");
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, null));
 
         // 延迟执行才能使旋转进度条显示出来
         new Handler().postDelayed(() -> {
-            mSwipeRefreshLayout.setRefreshing(true);
+            mRecyclerView.setRefreshing(true);
             refresh();
         }, 200);
     }
@@ -87,44 +86,36 @@ public class LocationListActivity extends BaseActivity implements ILocationPrese
         if (!Config.isConnected) {
             UtilBox.showSnackbar(this, R.string.cant_access_network);
 
-            mSwipeRefreshLayout.setRefreshing(false);
+            mRecyclerView.setRefreshing(false);
             return;
         }
-
-        mSwipeRefreshLayout.setRefreshing(true);
+        mRecyclerView.setRefreshing(true);
 
         new LocationPresenterImpl(this).getLocationList(Config.telephone);
     }
 
     @Override
     public void onGetLocationListResult(Boolean result, String info, List<Location> locationList) {
-        mSwipeRefreshLayout.setRefreshing(false);
+        mRecyclerView.setRefreshing(false);
 
         if (result) {
-            if (locationList.size() == 0) {
-                mEmptyLinearLayout.setVisibility(View.VISIBLE);
-                mRecyclerView.setVisibility(View.GONE);
-            } else {
-                mEmptyLinearLayout.setVisibility(View.GONE);
-                mRecyclerView.setVisibility(View.VISIBLE);
+            if (mAdapter == null) {
+                mAdapter = new LocationListAdapter();
+                mAdapter.setLocationList(locationList);
 
-                if (mAdapter == null) {
-                    mAdapter = new LocationListAdapter();
-                    mAdapter.setLocationList(locationList);
-
-                    FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) mRecyclerView.getLayoutParams();
-                    layoutParams.height = locationList.size() * (UtilBox.dip2px(this, 64) + 1);
+                if (locationList != null && locationList.size() != 0) {
+                    CoordinatorLayout.LayoutParams layoutParams = (CoordinatorLayout.LayoutParams) mRecyclerView.getLayoutParams();
+                    layoutParams.height = locationList.size() * (UtilBox.dip2px(this, 64) + 1) + 20;
                     mRecyclerView.setLayoutParams(layoutParams);
-
-                    mRecyclerView.setAdapter(mAdapter);
-                } else {
-                    mAdapter.setLocationList(locationList);
-                    mAdapter.notifyDataSetChanged();
                 }
+
+                mRecyclerView.setAdapter(mAdapter);
+            } else {
+                mAdapter.setLocationList(locationList);
+                mAdapter.notifyDataSetChanged();
             }
+
         } else {
-            mEmptyLinearLayout.setVisibility(View.VISIBLE);
-            mRecyclerView.setVisibility(View.GONE);
             UtilBox.showSnackbar(this, info);
         }
     }

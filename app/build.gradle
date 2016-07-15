@@ -99,6 +99,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile files('libs/BaiduLBS_Android.jar')
     compile files('libs/photoview.jar')
+    compile files('libs/jpush-android-2.1.7.jar')
     compile 'com.android.support:appcompat-v7:24.0.0'
     compile 'com.android.support:support-v4:24.0.0'
     compile 'com.android.support:design:24.0.0'
@@ -115,5 +116,5 @@ dependencies {
     compile 'com.getbase:floatingactionbutton:1.10.1'
     compile 'me.drakeet.materialdialog:library:1.2.2'
     compile 'com.github.arimorty:floatingsearchview:2.0.1'
-    compile 'com.getui:sdk:2.9.0.0'
+    compile 'com.malinskiy:superrecyclerview:1.1.4'
 }

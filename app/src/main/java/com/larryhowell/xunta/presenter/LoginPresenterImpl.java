@@ -1,6 +1,7 @@
 package com.larryhowell.xunta.presenter;
 
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.larryhowell.xunta.App;
 import com.larryhowell.xunta.common.Config;
@@ -44,6 +45,8 @@ public class LoginPresenterImpl implements ILoginPresenter {
             @Override
             public void onResponse(String response, int id) {
                 try {
+                    Log.i("haha", response);
+
                     JSONObject jsonObject = new JSONObject(response);
 
                     int resultCode = jsonObject.getInt("result");

@@ -9,6 +9,7 @@ public class Constants {
     public static final String SP_KEY_NICKNAME = "nickname";
     public static final String SP_KEY_PORTRAIT = "portrait";
     public static final String SP_KEY_TIME = "time";
+    public static final String SP_KEY_RID = "rid";
 
     public static final String NAMESPACE = "xunta";
     public static final String DIR_PORTRAIT = "portrait/";

@@ -135,8 +135,7 @@ public class MemberPlanFragment extends Fragment implements IPlanPresenter.IPlan
     public void refresh() {
         mProgressDialog.show();
 
-        //new PlanPresenterImpl(this).getPlan(((MemberMainActivity) getActivity()).mPerson.getTelephone());
-        new PlanPresenterImpl(this).getPlan(Config.telephone);
+        new PlanPresenterImpl(this).getPlan(((MemberMainActivity) getActivity()).mPerson.getTelephone());
     }
 
     @Override

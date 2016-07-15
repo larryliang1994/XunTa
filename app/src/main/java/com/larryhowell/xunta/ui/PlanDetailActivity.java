@@ -79,7 +79,7 @@ public class PlanDetailActivity extends BaseActivity {
         mToolbar.requestLayout();
         mAppBarLayout.requestLayout();
         mCollapsingToolbarLayout.requestLayout();
-        mDescEditText.setOnTouchListener((view, motionEvent) -> true);
+        //mDescEditText.setOnTouchListener((view, motionEvent) -> true);
 
         mStartTimeEditText.setText(UtilBox.getDateToString(Long.valueOf(mPlan.getStartTime()), UtilBox.DATE_TIME));
         mArrivalEditText.setText(UtilBox.getDateToString(Long.valueOf(mPlan.getArrival()), UtilBox.DATE_TIME));

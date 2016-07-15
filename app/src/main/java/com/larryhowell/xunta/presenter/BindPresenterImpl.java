@@ -37,7 +37,7 @@ public class BindPresenterImpl implements IBindPresenter {
         OkHttpUtil.get(params, new StringCallback() {
             @Override
             public void onError(Call call, Exception e, int id) {
-                iBindView.onBindResult(false, call.toString());
+                iBindView.onBindResult(false, "获取绑定列表失败");
             }
 
             @Override
@@ -67,42 +67,23 @@ public class BindPresenterImpl implements IBindPresenter {
     @Override
     public void bindConfirm(boolean accept, String telephone) {
         Map<String, String> params = new HashMap<>();
-        params.put("type", "bind");
+        params.put("type", "bindConfirm");
         params.put("id", Config.telephone);
         params.put("bindid", telephone);
-        params.put("operation", "add");
-        params.put("device_token", "");
+        params.put("operation", "confirm");
+        params.put("agree", accept ? "1" : "0");
 
         OkHttpUtil.get(params, new StringCallback() {
             @Override
             public void onError(Call call, Exception e, int id) {
-                iBindView.onBindResult(false, call.toString());
+                iBindView.onBindConfirmResult(true, "");
             }
 
             @Override
             public void onResponse(String response, int id) {
-                try {
-                    JSONObject jsonObject = new JSONObject(response);
-
-                    int resultCode = jsonObject.getInt("result");
-
-                    if (resultCode == 0) {
-                        iBindView.onBindResult(false, "非法请求");
-                    } else if (resultCode == -1) {
-                        iBindView.onBindResult(false, "操作失败");
-                    } else if (resultCode == -2) {
-                        iBindView.onBindResult(false, "不存在该用户");
-                    } else {
-                        iBindView.onBindResult(true, "");
-                    }
-                } catch (JSONException e) {
-                    iBindView.onBindResult(false, "绑定失败");
-                    e.printStackTrace();
-                }
+                iBindView.onBindConfirmResult(true, "");
             }
         });
-
-        new Handler().postDelayed(() -> iBindView.onBindConfirmResult(true, ""), 2000);
     }
 
     @Override
