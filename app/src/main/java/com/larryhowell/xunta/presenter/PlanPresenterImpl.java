@@ -36,8 +36,8 @@ public class PlanPresenterImpl implements IPlanPresenter {
         Map<String, String> params = new HashMap<>();
 
         params.put("type", "makePlan");
-        params.put("id", Config.telephone);                         //自己手机号
-        params.put("bindid", plan.getTargetTelephone());          //对方手机号
+        params.put("id", plan.getTargetTelephone());                         //自己手机号
+        params.put("bindid", Config.telephone);          //对方手机号
         params.put("time_start", plan.getStartTime());                //开始时间戳
         params.put("remark", plan.getDesc());                          //备注
         params.put("grade", String.valueOf(plan.getGrade()));       //等级

@@ -219,6 +219,7 @@ public class MainActivity extends BaseActivity
                 mTextView.setVisibility(View.VISIBLE);
                 mTextView.setText("请输入11位手机号");
             } else {
+                mTextView.setVisibility(View.VISIBLE);
                 mTextView.setText("查找中...");
 
                 new ShareLocationPresenterImpl(this).requestLocation(editText.getText().toString());

@@ -142,6 +142,12 @@ public class BindListActivity extends AppCompatActivity
 
                 mRecyclerView.setAdapter(mAdapter);
             } else {
+                if (Config.bindList != null && Config.bindList.size() != 0) {
+                    CoordinatorLayout.LayoutParams layoutParams = (CoordinatorLayout.LayoutParams) mRecyclerView.getLayoutParams();
+                    layoutParams.height = Config.bindList.size() * (UtilBox.dip2px(this, 72) + 1) + 10;
+                    mRecyclerView.setLayoutParams(layoutParams);
+                }
+
                 mAdapter.notifyDataSetChanged();
             }
         } else {
